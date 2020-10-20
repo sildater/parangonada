@@ -1,0 +1,2 @@
+# parangonada
+alignment checking tool
