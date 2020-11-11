@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
+  </head>
+  <body oncontextmenu="return false;">
+    <main style=" float: left; width: 100%; overflow:scroll; ">
+        <script>
+            let lm = 100; // radius
+let l;
+let ls;
+let r= 0;
+
+function setup() {
+  createCanvas(400, 400);
+  l = 2 * Math.tan(PI / 7) * lm;
+  ls = l / 2;
+  
+}
+
+function draw() {
+  background(220);
+  translate(200, 200); // position
+  strokeWeight(3);
+  septagon(l, ls, lm, r);
+  r = r + 0.03; // change rotation speed here
+}
+
+function septagon(hl, hls, hlm, hr) {
+  for (let i = 0; i < 7; i++) {
+    edge(hl, hls, hlm, hr + i * 2 * PI / 7);
+  }
+}
+
+function edge(jl, jls, jlm, jrl) {
+  push();
+  rotate(jrl);
+  translate(0, jlm);
+  line(-jls, 0, jls, 0);
+  pop();
+}
+        </script>
+    </main>
+  </body>
+</html>
