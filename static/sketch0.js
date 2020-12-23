@@ -14,6 +14,14 @@ let slider_len;
 let slider_dur;
 let slider_key;
 
+let checkbox_key;
+let checkbox_writing;
+
+
+
+
+
+
 
 let button_save;
 let button_change;
@@ -68,66 +76,69 @@ function setup() {
   //setup the canvas
   canva = createCanvas(1000,700);
   canva.mousePressed(checknoteclicked);
-  // canva.oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
-  // slider_start= createSlider(0,max(table.getColumn('p_onset')), min(table.getColumn('p_onset')));
   
-  // find maximal start and end in performance
-  startmax = min(table.getColumn('p_onset'));
-  endmax = max(table.getColumn('p_onset'))+max(table.getColumn('p_duration'));
-  durmax = endmax-startmax; 
+  setup_the_pianorolls();
   
-  // set start and end of selection in performance
-  start = min(table.getColumn('p_onset'));
-  end = start+5;
-  dur = 5; 
+
+}
+function setup_the_pianorolls(){
+// find maximal start and end in performance
+startmax = min(table.getColumn('p_onset'));
+endmax = max(table.getColumn('p_onset'))+max(table.getColumn('p_duration'));
+durmax = endmax-startmax; 
+
+// set start and end of selection in performance
+start = min(table.getColumn('p_onset'));
+end = start+5;
+dur = 5; 
+// buttons and divs on the page
+button_change = createButton('change alignment');
+//button.position(19, 19);
+button_change.mousePressed(change_alignment);
+button_save = createButton('save alignment');
+//button.position(19, 19);
+button_save.mousePressed(save_alignment);
+createDiv("left click on a note to see its alignment");
+createDiv("right click another note to temporarily align them");
+createDiv("middle click to unmark any notes");
+createDiv("press key 'a' or button 'change alignment' to fix the alignment");
+createDiv("press button 'save alignment' to download a csv file of note alignments");
+note_one_div = createDiv('no note clicked');
+note_two_div = createDiv('no note right clicked');
+
+// set pitch of selection in performance
+pitchmin = min(table.getColumn("pitch"));
+pitchmax = max(table.getColumn("pitch"));
+incrementy = floor(300/(pitchmax- pitchmin+1));
+
+pitchminpart = min(tablepart.getColumn("pitch"));
+pitchmaxpart = max(tablepart.getColumn("pitch"));
+incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
 
 
+// magnification number
+width = 10000/80*dur; // 125 pixel / second
+widthinit = 10000/80*dur; // 125 pixel / second
 
+createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
+slider_len = createInput("1");
+createDiv("set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec");
+slider_start = createInput("0");
+createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
+slider_dur = createInput("10");
+checkbox_key = createCheckbox('show key tonic and fifth', false);
+createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
+slider_key = createInput("0");
+checkbox_writing = createCheckbox('show performance / score background test', true);
+//inp.input(myInputEvent);
 
-  // buttons and divs on the page
-  button_change = createButton('change alignment');
-  //button.position(19, 19);
-  button_change.mousePressed(change_alignment);
-  button_save = createButton('save alignment');
-  //button.position(19, 19);
-  button_save.mousePressed(save_alignment);
-  createDiv("left click on a note to see its alignment");
-  createDiv("right click another note to temporarily align them");
-  createDiv("middle click to unmark any notes");
-  createDiv("press key 'a' or button 'change alignment' to fix the alignment");
-  createDiv("press button 'save alignment' to download a csv file of note alignments");
-  note_one_div = createDiv('no note clicked');
-  note_two_div = createDiv('no note right clicked');
+//slider_start.mousePressed(slider_update);
+slider_len.input(slider_update);
+slider_start.input(slider_update);
+slider_dur.input(slider_update);
+slider_key.input(slider_update);
 
-  // set pitch of selection in performance
-  pitchmin = min(table.getColumn("pitch"));
-  pitchmax = max(table.getColumn("pitch"));
-  incrementy = floor(300/(pitchmax- pitchmin+1));
-
-  pitchminpart = min(tablepart.getColumn("pitch"));
-  pitchmaxpart = max(tablepart.getColumn("pitch"));
-  incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
- 
-
-  // magnification number
-  width = 10000/80*dur; // 125 pixel / second
-  widthinit = 10000/80*dur; // 125 pixel / second
-
-  createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
-  slider_len = createInput("1");
-  createDiv("set the beginning of the performance piano roll: default 0 sec, min "+startmax+" max "+endmax+" sec");
-  slider_start = createInput("0");
-  createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
-  slider_dur = createInput("10");
-  createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
-  slider_key = createInput("0");
-  //inp.input(myInputEvent);
-  slider_update();
-  //slider_start.mousePressed(slider_update);
-  slider_len.input(slider_update);
-  slider_start.input(slider_update);
-  slider_dur.input(slider_update);
-  slider_key.input(slider_update);
+slider_update();
 
 }
 
@@ -167,7 +178,7 @@ function slider_update(){
       let xe = width;
       let ye = incrementy;
       let keyblock = new NoteRectangle(xx,yy,xe,ye, "fifth", "keyblock");
-      keyblock.col = color(50,0,0,50);
+      keyblock.col = color(50,50,50,50);
       keyblocks.push(keyblock);
     } 
   }
@@ -188,7 +199,7 @@ function slider_update(){
       let xe = width;
       let ye = incrementypart;
       let keyblock = new NoteRectangle(xx,yy,xe,ye, "fifth", "keyblock");
-      keyblock.col = color(50,0,0,50);
+      keyblock.col = color(50,50,50,50);
       keyblocks.push(keyblock);
     } 
   }
@@ -261,16 +272,23 @@ function draw() {
     fill(0);
     stroke(0);
     rect(0,300,width,100);
-    textSize(300);
-    fill(0, 102, 153, 71);
-    stroke(255)
-    text('performance', 25, 200);
-    text('score', 25, 600);
+
+    if (checkbox_writing.checked()){
+      textSize(300);
+      fill(0, 102, 153, 71);
+      stroke(255);
+      text('performance', 25, 200);
+      text('score', 25, 600);
+    }
+    
+    if (checkbox_key.checked()){
+      for(var i = 0; i < keyblocks.length; i++){
+        keyblocks[i].display();
+      }
+    }
 
 
-  for(var i = 0; i < keyblocks.length; i++){
-    keyblocks[i].display();
-  }
+  
 
   for(var i = 0; i < notes.length; i++){
     notes[i].display();
