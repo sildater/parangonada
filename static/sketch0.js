@@ -6,15 +6,23 @@ let canva;
 let perf = {};
 let score = {};
 let notes = [];
+let keyblocks = [];
 let lines = {};
 
 let slider_start;
 let slider_len;
+let slider_dur;
+let slider_key;
+
+
 let button_save;
 let button_change;
-let input_idx;
+//let input_idx;
 let note_one_div;
-let note_div;
+let note_two_div;
+
+let width;
+let widthinit;
 
 let pitchmin;
 let pitchmax;
@@ -24,6 +32,9 @@ let notearray;
 let start;
 let dur;
 let end;
+let startmax;
+let durmax;
+let endmax;
 let lastonset;
 
 let pitchminpart;
@@ -57,15 +68,23 @@ function setup() {
   //setup the canvas
   canva = createCanvas(1000,700);
   canva.mousePressed(checknoteclicked);
-  //canva.oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
-  //slider_start= createSlider(0,max(table.getColumn('p_onset')), min(table.getColumn('p_onset')));
+  // canva.oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
+  // slider_start= createSlider(0,max(table.getColumn('p_onset')), min(table.getColumn('p_onset')));
+  
+  // find maximal start and end in performance
+  startmax = min(table.getColumn('p_onset'));
+  endmax = max(table.getColumn('p_onset'))+max(table.getColumn('p_duration'));
+  durmax = endmax-startmax; 
+  
+  // set start and end of selection in performance
   start = min(table.getColumn('p_onset'));
-  end = max(table.getColumn('p_onset'))+max(table.getColumn('p_duration'));
-  dur = end-start;  
-  let widthinit = 10000/80*dur;
-  let widthmax = widthinit * 3;
+  end = start+5;
+  dur = 5; 
 
-  slider_len = createSlider(1000,widthmax,widthinit);
+
+
+
+  // buttons and divs on the page
   button_change = createButton('change alignment');
   //button.position(19, 19);
   button_change.mousePressed(change_alignment);
@@ -80,6 +99,7 @@ function setup() {
   note_one_div = createDiv('no note clicked');
   note_two_div = createDiv('no note right clicked');
 
+  // set pitch of selection in performance
   pitchmin = min(table.getColumn("pitch"));
   pitchmax = max(table.getColumn("pitch"));
   incrementy = floor(300/(pitchmax- pitchmin+1));
@@ -89,20 +109,92 @@ function setup() {
   incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
  
 
+  // magnification number
+  width = 10000/80*dur; // 125 pixel / second
+  widthinit = 10000/80*dur; // 125 pixel / second
+
+  createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
+  slider_len = createInput("1");
+  createDiv("set the beginning of the performance piano roll: default 0 sec, min "+startmax+" max "+endmax+" sec");
+  slider_start = createInput("0");
+  createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
+  slider_dur = createInput("10");
+  createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
+  slider_key = createInput("0");
+  //inp.input(myInputEvent);
   slider_update();
   //slider_start.mousePressed(slider_update);
-  slider_len.mousePressed(slider_update);
+  slider_len.input(slider_update);
+  slider_start.input(slider_update);
+  slider_dur.input(slider_update);
+  slider_key.input(slider_update);
 
 }
 
+
 function slider_update(){
-  resizeCanvas(slider_len.value(),700)
+  // startpoint of performance pr; min firstnote max len-5
+  start = max(min(Number(slider_start.value()),endmax-1),startmax);
+  // duration of performance pr; min 1, max len-start
+  dur = max(min(Number(slider_dur.value()),endmax-start),1);
+  // update end accordingly
+  end = start+dur;
+  widthinit = 10000/80*dur;
+  // (re)size of canvas
+  width = widthinit*max(min(Number(slider_len.value()),10),0.1);
+  console.log(width, start, end, dur);
+  resizeCanvas(width,700);
   background(255);
   fill(0);
-  rect(0,300,slider_len.value(),100);
+  rect(0,300,width,100);
+
+  keyblocks = [];
+  // compute reference key blocks in performance
+  let key = max(min(Number(slider_key.value()),11),0);
+  for (let p = pitchmin; p < pitchmax; p++){
+    if (p%12==key) {
+      let xx = 0;
+      let yy = 300-(p-pitchmin+1)*incrementy;
+      let xe = width;
+      let ye = incrementy;
+      let keyblock = new NoteRectangle(xx,yy,xe,ye, "tonic", "keyblock");
+      keyblock.col = color(100,0,0,50);
+      keyblocks.push(keyblock);
+    }
+    if (p%12==(key+7)%12) {
+      let xx = 0;
+      let yy = 300-(p-pitchmin+1)*incrementy;
+      let xe = width;
+      let ye = incrementy;
+      let keyblock = new NoteRectangle(xx,yy,xe,ye, "fifth", "keyblock");
+      keyblock.col = color(50,0,0,50);
+      keyblocks.push(keyblock);
+    } 
+  }
+  // compute reference key blocks in score
+  for (let p = pitchminpart; p < pitchmaxpart; p++){
+    if (p%12==key) {
+      let xx = 0;
+      let yy = 700-(p-pitchminpart+1)*incrementypart;
+      let xe = width;
+      let ye = incrementypart;
+      let keyblock = new NoteRectangle(xx,yy,xe,ye, "tonic", "keyblock");
+      keyblock.col = color(100,0,0,50);
+      keyblocks.push(keyblock);
+    }
+    if (p%12==(key+7)%12) {
+      let xx = 0;
+      let yy = 700-(p-pitchminpart+1)*incrementypart;
+      let xe = width;
+      let ye = incrementypart;
+      let keyblock = new NoteRectangle(xx,yy,xe,ye, "fifth", "keyblock");
+      keyblock.col = color(50,0,0,50);
+      keyblocks.push(keyblock);
+    } 
+  }
 
 
-
+  // compute notearrays and match array within the given (start-end)
   notearray= onset_offset_in_limits (table, start, end);
   lastonset= notearray[notearray.length-1][1]-start;
   matchl = alignment_ids(notearray, alignment, tablepart);
@@ -112,33 +204,35 @@ function slider_update(){
   perf = {};
   score = {};
 
+  // generate new NoteRectangles for the performance
   for (let r = 0; r < notearray.length; r++){
-    let xx = (notearray[r][1]-start)/dur*slider_len.value();
+    let xx = (notearray[r][1]-start)/dur*width;
     let yy = 300-(notearray[r][2]-pitchmin+1)*incrementy;
-    let xe = notearray[r][0]/dur*slider_len.value();
+    let xe = notearray[r][0]/dur*width;
     let ye = incrementy;
 
     perf[notearray[r][3]] = new NoteRectangle(xx,yy,xe,ye, notearray[r][3], "perf");
     notes.push(perf[notearray[r][3]]);    
   }
 
-  
+  // generate new NoteRectangles for the score
   for (let r = 0; r < notearraypart.length; r++){
-    let xxp = (notearraypart[r][1]-startpart)/durpart*slider_len.value();
+    let xxp = (notearraypart[r][1]-startpart)/durpart*width;
     let yyp = 700-(notearraypart[r][2]-pitchminpart+1)*incrementypart;
-    let xep = notearraypart[r][0]/durpart*slider_len.value();
+    let xep = notearraypart[r][0]/durpart*width;
     let yep = incrementypart;
     score[notearraypart[r][3]] = new NoteRectangle(xxp,yyp,xep,yep, notearraypart[r][3], "score");
     notes.push(score[notearraypart[r][3]]);
   }
   
+  // generate lines
   lines_from_matchl();
   
 }
 
 
 
-
+// generate lines from global variable matchl
 function lines_from_matchl () {
   lines = {};
   let ppartid;
@@ -166,12 +260,17 @@ function draw() {
     background(255);
     fill(0);
     stroke(0);
-    rect(0,300,slider_len.value(),100);
+    rect(0,300,width,100);
     textSize(300);
     fill(0, 102, 153, 71);
     stroke(255)
     text('performance', 25, 200);
     text('score', 25, 600);
+
+
+  for(var i = 0; i < keyblocks.length; i++){
+    keyblocks[i].display();
+  }
 
   for(var i = 0; i < notes.length; i++){
     notes[i].display();
@@ -188,6 +287,7 @@ function draw() {
 
 
 
+// get an array of arrays of notes in table that lie within (start-end): performance
 function onset_offset_in_limits (table, start, end) {
   let d = [];
   for (let r = 0; r < table.getRowCount(); r++){
@@ -198,6 +298,7 @@ function onset_offset_in_limits (table, start, end) {
 return d
 }
 
+// get an array of arrays of notes in table that lie within (start-end): score
 function onset_offset_in_limits_p (table, start, end) {
   let d = [];
   for (let r = 0; r < table.getRowCount(); r++){
@@ -208,7 +309,7 @@ function onset_offset_in_limits_p (table, start, end) {
 return d
 }
 
-
+// get an array of alignments from a notearray (performance), an alignment csv and a score note csv
 function alignment_ids (array, alignment, table) {
   let matchl = [];
   let part_onsets = [];
@@ -393,7 +494,7 @@ function checknoteclicked() {
   if (right_clicked_note && clicked_note) {
     if (right_clicked_note.type == clicked_note.type)
     {
-      alert("both notes are from the same piano roll ye blinking idiot...");
+      alert("both notes are from the same piano roll ya plonker...");
       right_clicked_note = null;
       note_two_div.html('no note right clicked');
       for(var i = 0; i < notes.length; i++){
