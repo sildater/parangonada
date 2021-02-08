@@ -68,6 +68,49 @@ function preload() {
   //__________________________________________________________________________________________
   feature = loadTable("static/feature.csv", 'csv', 'header');
 }
+let err;
+//________________- upload files -__________________________
+function redraw_with_new_files() {
+  console.log("get here before loading");
+  Promise.allSettled([
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('perf_csv_input').files[0]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('score_csv_input').files[0]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('align_csv_input').files[0]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('feature_csv_input').files[0]), 'csv', 'header', callback = res)})//,
+    //new Promise((res) => {setTimeout(()=>{res("HIIIIII")}, 0)})
+  ])
+  .then(values =>
+    {table = values[0]["value"];
+      tablepart = values[1]["value"];
+      alignment = values[2]["value"];
+      feature = values[3]["value"];
+      console.log("starting the drawing now!", values); 
+      setup_the_pianorolls();
+    })
+  .catch(errors => {err = errors; alert("error loading one of the uploaded files");})
+  
+
+    /*table = await new Promise((res) => {res(loadTable(URL.createObjectURL(document.getElementById('perf_csv_input').files[0]), 'csv', 'header'))})
+    tablepart = await new Promise((res) => {res(loadTable(URL.createObjectURL(document.getElementById('score_csv_input').files[0]), 'csv', 'header'))})
+    alignment = await new Promise((res) => {res(loadTable(URL.createObjectURL(document.getElementById('align_csv_input').files[0]), 'csv', 'header'))})
+    feature = await new Promise((res) => {res(loadTable(URL.createObjectURL(document.getElementById('feature_csv_input').files[0]), 'csv', 'header'))})*/
+    
+    /*table =loadTable(URL.createObjectURL(document.getElementById('perf_csv_input').files[0]), 'csv', 'header'),
+    tablepart=loadTable(URL.createObjectURL(document.getElementById('score_csv_input').files[0]), 'csv', 'header'),
+    alignment=loadTable(URL.createObjectURL(document.getElementById('align_csv_input').files[0]), 'csv', 'header'),
+    feature=loadTable(URL.createObjectURL(document.getElementById('feature_csv_input').files[0]), 'csv', 'header')*/
+  
+}
+
+/*async function redraw_with_new_files() {
+  console.log("get here bewfore wawit");
+  let result = await load_new_files(); 
+  console.log(result)
+  console.log("starting the drawing now!");
+  setup_the_pianorolls();
+}*/
+
+
 
 function keyTyped() {
   if (key === 'a') {
@@ -82,69 +125,105 @@ function setup() {
   
   setup_the_pianorolls();
   //__________________________________________________________________________________________
-  frameRate(10);
-  
+  //frameRate(10);
+  noLoop();
 
 }
 function setup_the_pianorolls(){
-// find maximal start and end in performance
-startmax = min(table.getColumn('onset_sec'));
-endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
-durmax = endmax-startmax; 
+  // find maximal start and end in performance
+  startmax = min(table.getColumn('onset_sec'));
+  endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
+  durmax = endmax-startmax; 
+  console.log(startmax, endmax, durmax, table.getColumn('onset_sec'))
 
-// set start and end of selection in performance
-start = min(table.getColumn('onset_sec'));
-end = start+5;
-dur = 5; 
-// buttons and divs on the page
-button_change = createButton('change alignment');
-//button.position(19, 19);
-button_change.mousePressed(change_alignment);
-button_save = createButton('save alignment');
-//button.position(19, 19);
-button_save.mousePressed(save_alignment);
-createDiv("left click on a note to see its alignment");
-createDiv("right click another note to temporarily align them");
-createDiv("middle click to unmark any notes");
-createDiv("press key 'a' or button 'change alignment' to fix the alignment");
-createDiv("press button 'save alignment' to download a csv file of note alignments");
-note_one_div = createDiv('no note clicked');
-note_two_div = createDiv('no note right clicked');
+  // set start and end of selection in performance
+  start = min(table.getColumn('onset_sec'));
+  end = start+5;
+  dur = 5; 
+  // buttons and divs on the page
+  button_change = createButton('change alignment');
+  //button.position(19, 19);
+  button_change.mousePressed(change_alignment);
+  button_save = createButton('save alignment');
+  //button.position(19, 19);
+  button_save.mousePressed(save_alignment);
+  button_upload = createButton('visualise uploaded files');
+  button_upload.mousePressed(redraw_with_new_files);
 
-// set pitch of selection in performance
-pitchmin = min(table.getColumn("pitch"));
-pitchmax = max(table.getColumn("pitch"));
-incrementy = floor(300/(pitchmax- pitchmin+1));
+  createDiv("left click on a note to see its alignment");
+  createDiv("right click another note to temporarily align them");
+  createDiv("middle click to unmark any notes");
+  createDiv("press key 'a' or button 'change alignment' to fix the alignment");
+  createDiv("press button 'save alignment' to download a csv file of note alignments");
+  note_one_div = createDiv('no note clicked');
+  note_two_div = createDiv('no note right clicked');
 
-pitchminpart = min(tablepart.getColumn("pitch"));
-pitchmaxpart = max(tablepart.getColumn("pitch"));
-incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
+  // set pitch of selection in performance
+  pitchmin = min(table.getColumn("pitch"));
+  pitchmax = max(table.getColumn("pitch"));
+  incrementy = floor(300/(pitchmax- pitchmin+1));
+
+  pitchminpart = min(tablepart.getColumn("pitch"));
+  pitchmaxpart = max(tablepart.getColumn("pitch"));
+  incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
 
 
-// magnification number
-width = 10000/80*dur; // 125 pixel / second
-widthinit = 10000/80*dur; // 125 pixel / second
+  // magnification number
+  width = 10000/80*dur; // 125 pixel / second
+  widthinit = 10000/80*dur; // 125 pixel / second
 
-createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
-slider_len = createInput("1");
-createDiv("set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec");
-slider_start = createInput("0");
-createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
-slider_dur = createInput("10");
-checkbox_key = createCheckbox('show key tonic and fifth', false);
-createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
-slider_key = createInput("0");
-checkbox_writing = createCheckbox('show performance / score background test', true);
-//inp.input(myInputEvent);
+  createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
+  slider_len = createInput("1");
+  createDiv("set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec");
+  slider_start = createInput("0");
+  createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
+  slider_dur = createInput("10");
+  createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
+  slider_key = createInput("0");
+  checkbox_key = createCheckbox('show key tonic and fifth', false);
+  checkbox_key.changed(checkbox_update);
+  checkbox_writing = createCheckbox('show performance / score background text', true);
+  checkbox_writing.changed(checkbox_update);
+  checkbox_alignment = createCheckbox('show alignment lines', true);
+  checkbox_alignment.changed(checkbox_update);
+  checkbox_art = createCheckbox('show articulation values in score', false);
+  checkbox_art.changed(checkbox_update);
+  checkbox_tim = createCheckbox('show timing values in score', false);
+  checkbox_tim.changed(checkbox_update);
+  checkbox_vel = createCheckbox('show velocity values in score', true);
+  checkbox_vel.changed(checkbox_update);
+  createDiv("set the magnification of expressive features in the score");
+  feature_slider = createSlider(0.1, 5, 2, 0.01);
+  feature_slider.changed(note_slider_update);
+  createDiv("set the opacity of aligned notes");
+  color_slider = createSlider(0, 255, 100,1);
+  color_slider.changed(note_slider_update);
+  //inp.input(myInputEvent);
 
-//slider_start.mousePressed(slider_update);
-slider_len.input(slider_update);
-slider_start.input(slider_update);
-slider_dur.input(slider_update);
-slider_key.input(slider_update);
+  //slider_start.mousePressed(slider_update);
+  
+  slider_len.input(slider_update);
+  slider_start.input(slider_update);
+  slider_dur.input(slider_update);
+  slider_key.input(slider_update);
 
-slider_update();
+  slider_update();
 
+}
+
+function checkbox_update() {
+  redraw();
+}
+
+function note_slider_update() {
+  for(var i = 0; i < notes.length; i++){
+    notes[i].feature_vis = feature_slider.value();
+    if (notes[i].linked_note != "") {
+      notes[i].col = color(0,0,255, color_slider.value());
+    }
+  }
+  redraw();
+  
 }
 
 
@@ -249,12 +328,13 @@ function slider_update(){
   for (let r = 0; r < feature.getRowCount(); r++){
   if (feature.getColumn("id")[r] in score) {
     console
-    score[feature.getColumn("id")[r]].vel = feature.getColumn("velocity")[r]*2;
-    score[feature.getColumn("id")[r]].art = feature.getColumn("articulation")[r]*2;
-    score[feature.getColumn("id")[r]].tim = feature.getColumn("timing")[r]*2;
+    score[feature.getColumn("id")[r]].vel = feature.getColumn("velocity")[r];
+    score[feature.getColumn("id")[r]].art = feature.getColumn("articulation")[r];
+    score[feature.getColumn("id")[r]].tim = feature.getColumn("timing")[r];
   }
   }
-  
+  click_cleanup();
+  redraw();
 }
 
 
@@ -278,9 +358,6 @@ function lines_from_matchl () {
   };
 
 }
-
-
-
 
 
 function draw() {
@@ -309,15 +386,37 @@ function draw() {
   for(var i = 0; i < notes.length; i++){
     notes[i].display();
   }
-  for (var key in lines) {
+
+  if (checkbox_vel.checked()){
+    for(var i = 0; i < notes.length; i++){
+      notes[i].feature_display_vel();
+    }
+  }
+  if (checkbox_tim.checked()){
+    for(var i = 0; i < notes.length; i++){
+      notes[i].feature_display_tim();
+    }
+  }
+  if (checkbox_art.checked()){
+    for(var i = 0; i < notes.length; i++){
+      notes[i].feature_display_art();
+    }
+  }
+  if (checkbox_alignment.checked()){
+    for (var key in lines) {
     
     lines[key].display();
     
-}
+    }
+  }
   if (connect_line) {
     connect_line.display();
   }
+
+  
+
 }
+
 
 
 
@@ -370,7 +469,7 @@ function alignment_ids (array, alignment, table) {
 
 
 
-function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) {
+function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, feature_vis = 2 ) {
   this.x = x;
   this.y = y;
   this.xl = xl;
@@ -391,6 +490,7 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) 
   this.vel = vel;
   this.art = art;
   this.tim = tim;
+  this.feature_vis = feature_vis;
   
   this.reset = function(){
     this.col = color(255,0,0);
@@ -422,37 +522,48 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) 
       text(this.name, this.x,this.y);
     }
     else {
-      stroke(255);
+      stroke(215);
       textSize(this.textSIZ);
       fill(this.col);
       rect(this.x, this.y, this.xl, this.yl);
       text(this.name, this.x,this.y);
     }
-    if (this.vel) {
-        /* timing: the higher the value the earlier the note (more to left)
-        push();
-        strokeWeight(2);
-        stroke(this.col_line)
-        line(this.x,this.y,this.x-this.tim, this.y)
-        circle(this.x-this.tim, this.y, 10);
-        pop();*/
-        // articulation: the higher the value the more staccato the note (= -log(ratio), more to the left)
-        push();
-        strokeWeight(2);
-        stroke(this.col_line1)
-        line(this.x+this.xl,this.y+this.yl,this.x+this.xl+this.art, this.y+this.yl)
-        circle(this.x+this.xl+this.art, this.y+this.yl, 10);
-        pop();
-        /* velocity: the higher the value the louder the note (more upwards)
-        push();
-        strokeWeight(2);
-        stroke(this.col_line2)
-        line(this.x+this.xl/2,this.y,this.x+this.xl/2, this.y-this.vel)
-        circle(this.x+this.xl/2, this.y-this.vel, 10);
-        pop();*/
+  }
+  this.feature_display_tim = function() {
+    if (this.tim) {
+      // timing: the higher the value the earlier the note (more to left)
+      push();
+      fill(0,0,0,0);
+      strokeWeight(2);
+      stroke(this.col_line)
+      line(this.x,this.y,this.x-this.tim*this.feature_vis, this.y)
+      circle(this.x-this.tim*this.feature_vis, this.y, 10);
+      pop();
     }
-    
-
+  };
+  this.feature_display_art = function() {
+    if (this.art) {
+      // articulation: the higher the value the more staccato the note (= -log(ratio), more to the left)
+      push();
+      strokeWeight(2);
+      fill(0,0,0,0);
+      stroke(this.col_line1)
+      line(this.x+this.xl,this.y+this.yl,this.x+this.xl+this.art*this.feature_vis, this.y+this.yl)
+      circle(this.x+this.xl+this.art*this.feature_vis, this.y+this.yl, 10);
+      pop();
+    }
+  };
+  this.feature_display_vel = function() {
+    if (this.vel) {
+      // velocity: the higher the value the louder the note (more upwards)
+      push();
+      strokeWeight(2);
+      fill(0,0,0,0);
+      stroke(this.col_line2)
+      line(this.x+this.xl/2,this.y,this.x+this.xl/2, this.y-this.vel*this.feature_vis)
+      circle(this.x+this.xl/2, this.y-this.vel*this.feature_vis, 10);
+      pop();
+    }
   };
 
   this.clicked = function() {
@@ -469,12 +580,10 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) 
     note_one_div.html("note 1 id::: "+this.name);
     }
   };
-  
 
   this.right_rebase = function() {
     this.rclik = false;
   };
- 
 
   this.right_clicked = function() {
     if(mouseX>=this.x && mouseX<this.x+this.xl && mouseY>=this.y && mouseY<this.y+this.yl){
@@ -489,9 +598,6 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) 
     note_two_div.html("note 2 id::: "+this.name);
     }
   }; 
-
-
-
 
 }
 
@@ -509,7 +615,7 @@ function click_cleanup(){
   for(key in lines){
     lines[key].clicked();
   }
-  
+  redraw();
 };
 
 
@@ -584,6 +690,8 @@ function checknoteclicked() {
   for(key in lines){
     lines[key].clicked();
   }
+
+  redraw();
 }
 
 function NoteLine(x1, y1, x2, y2, perfnote, scorenote) {
