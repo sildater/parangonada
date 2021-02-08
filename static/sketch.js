@@ -167,7 +167,6 @@ function setup_the_pianorolls(){
   pitchmaxpart = max(tablepart.getColumn("pitch"));
   incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
 
-
   // magnification number
   width = 10000/80*dur; // 125 pixel / second
   widthinit = 10000/80*dur; // 125 pixel / second
@@ -188,15 +187,15 @@ function setup_the_pianorolls(){
   checkbox_alignment.changed(checkbox_update);
   checkbox_art = createCheckbox('show articulation values in score', false);
   checkbox_art.changed(checkbox_update);
-  checkbox_tim = createCheckbox('show timing values in score', false);
+  checkbox_tim = createCheckbox('show timing values in score', true);
   checkbox_tim.changed(checkbox_update);
-  checkbox_vel = createCheckbox('show velocity values in score', true);
+  checkbox_vel = createCheckbox('show velocity values in score', false);
   checkbox_vel.changed(checkbox_update);
   createDiv("set the magnification of expressive features in the score");
   feature_slider = createSlider(0.1, 5, 2, 0.01);
   feature_slider.changed(note_slider_update);
   createDiv("set the opacity of aligned notes");
-  color_slider = createSlider(0, 255, 100,1);
+  color_slider = createSlider(0, 255, 200,1);
   color_slider.changed(note_slider_update);
   //inp.input(myInputEvent);
 
@@ -500,7 +499,7 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
   }
   this.link = function (linked_note_id){
     this.linked_note = linked_note_id;
-    this.col = color(0,0,255,100);
+    this.col = color(0,0,255,200);
   }
 
   this.rebase = function() {
