@@ -7,6 +7,7 @@ It works in with csv files for score, performance, expressive features (dynamics
 It's possible to generate this file structure from any kind of alignment encoding, we use:
 * [PARTITURA](https://github.com/CPJKU/partitura/tree/master)
 * [BASISMIXER](https://github.com/OFAI/basismixer)
+
 to visualize files in the match file format
 
 ## planned updates:
