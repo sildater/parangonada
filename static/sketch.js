@@ -1,6 +1,7 @@
 let table;
 let tablep;
 let alignment; 
+let feature
 let canva;
 
 let perf = {};
@@ -64,6 +65,8 @@ function preload() {
   table = loadTable("static/ppart.csv", 'csv', 'header');
   tablepart = loadTable("static/part.csv", 'csv', 'header');
   alignment = loadTable("static/align.csv", 'csv', 'header');
+  //__________________________________________________________________________________________
+  feature = loadTable("static/feature.csv", 'csv', 'header');
 }
 
 function keyTyped() {
@@ -78,6 +81,8 @@ function setup() {
   canva.mousePressed(checknoteclicked);
   
   setup_the_pianorolls();
+  //__________________________________________________________________________________________
+  frameRate(10);
   
 
 }
@@ -238,6 +243,17 @@ function slider_update(){
   
   // generate lines
   lines_from_matchl();
+
+  //__________________________________________________________________________________________
+  // add articulation to score notes
+  for (let r = 0; r < feature.getRowCount(); r++){
+  if (feature.getColumn("id")[r] in score) {
+    console
+    score[feature.getColumn("id")[r]].vel = feature.getColumn("velocity")[r]*2;
+    score[feature.getColumn("id")[r]].art = feature.getColumn("articulation")[r]*2;
+    score[feature.getColumn("id")[r]].tim = feature.getColumn("timing")[r]*2;
+  }
+  }
   
 }
 
@@ -354,7 +370,7 @@ function alignment_ids (array, alignment, table) {
 
 
 
-function NoteRectangle(x, y, xl, yl, name, type) {
+function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null ) {
   this.x = x;
   this.y = y;
   this.xl = xl;
@@ -362,6 +378,9 @@ function NoteRectangle(x, y, xl, yl, name, type) {
   this.col = color(255, 0, 0);
   this.col_click = color(0, 255, 255);
   this.col_clickr = color(0, 255, 124);
+  this.col_line = color(255, 0, 124);
+  this.col_line1 = color(0, 255, 0);
+  this.col_line2 = color(124, 124, 0);
   this.name = name;
   this.linked_note = "";
   this.textSIZ = 14;
@@ -369,6 +388,9 @@ function NoteRectangle(x, y, xl, yl, name, type) {
   this.type = type;
   this.clik = false;
   this.rclik = false;
+  this.vel = vel;
+  this.art = art;
+  this.tim = tim;
   
   this.reset = function(){
     this.col = color(255,0,0);
@@ -378,7 +400,7 @@ function NoteRectangle(x, y, xl, yl, name, type) {
   }
   this.link = function (linked_note_id){
     this.linked_note = linked_note_id;
-    this.col = color(0,0,255);
+    this.col = color(0,0,255,100);
   }
 
   this.rebase = function() {
@@ -406,6 +428,30 @@ function NoteRectangle(x, y, xl, yl, name, type) {
       rect(this.x, this.y, this.xl, this.yl);
       text(this.name, this.x,this.y);
     }
+    if (this.vel) {
+        /* timing: the higher the value the earlier the note (more to left)
+        push();
+        strokeWeight(2);
+        stroke(this.col_line)
+        line(this.x,this.y,this.x-this.tim, this.y)
+        circle(this.x-this.tim, this.y, 10);
+        pop();*/
+        // articulation: the higher the value the more staccato the note (= -log(ratio), more to the left)
+        push();
+        strokeWeight(2);
+        stroke(this.col_line1)
+        line(this.x+this.xl,this.y+this.yl,this.x+this.xl+this.art, this.y+this.yl)
+        circle(this.x+this.xl+this.art, this.y+this.yl, 10);
+        pop();
+        /* velocity: the higher the value the louder the note (more upwards)
+        push();
+        strokeWeight(2);
+        stroke(this.col_line2)
+        line(this.x+this.xl/2,this.y,this.x+this.xl/2, this.y-this.vel)
+        circle(this.x+this.xl/2, this.y-this.vel, 10);
+        pop();*/
+    }
+    
 
   };
 
