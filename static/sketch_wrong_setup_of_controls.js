@@ -20,13 +20,15 @@ let checkbox_writing;
 
 
 
+
+
+
+
 let button_save;
 let button_change;
 //let input_idx;
 let note_one_div;
 let note_two_div;
-let start_time_div;
-let end_time_div;
 
 let width;
 let widthinit;
@@ -120,15 +122,24 @@ function setup() {
   //setup the canvas
   canva = createCanvas(1000,700);
   canva.mousePressed(checknoteclicked);
-  setup_controls()
+  
   setup_the_pianorolls();
   //__________________________________________________________________________________________
   //frameRate(10);
   noLoop();
 
 }
+function setup_the_pianorolls(){
+  // find maximal start and end in performance
+  startmax = min(table.getColumn('onset_sec'));
+  endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
+  durmax = endmax-startmax; 
+  console.log(startmax, endmax, durmax, table.getColumn('onset_sec'))
 
-function setup_controls() {
+  // set start and end of selection in performance
+  start = min(table.getColumn('onset_sec'));
+  end = start+5;
+  dur = 5; 
   // buttons and divs on the page
   button_change = createButton('change alignment');
   //button.position(19, 19);
@@ -147,22 +158,27 @@ function setup_controls() {
   note_one_div = createDiv('no note clicked');
   note_two_div = createDiv('no note right clicked');
 
+  // set pitch of selection in performance
+  pitchmin = min(table.getColumn("pitch"));
+  pitchmax = max(table.getColumn("pitch"));
+  incrementy = floor(300/(pitchmax- pitchmin+1));
 
+  pitchminpart = min(tablepart.getColumn("pitch"));
+  pitchmaxpart = max(tablepart.getColumn("pitch"));
+  incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
 
+  // magnification number
+  width = 10000/80*dur; // 125 pixel / second
+  widthinit = 10000/80*dur; // 125 pixel / second
 
   createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
   slider_len = createInput("1");
-  start_time_div = createDiv("set the beginning of the performance piano roll: default *loading* sec, min *loading* max *loading* sec");
+  createDiv("set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec");
   slider_start = createInput("0");
-  end_time_div = createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max *loading* sec");
+  createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec");
   slider_dur = createInput("10");
   createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
   slider_key = createInput("0");
-
-  slider_len.input(slider_update);
-  slider_start.input(slider_update);
-  slider_dur.input(slider_update);
-  slider_key.input(slider_update);
   checkbox_key = createCheckbox('show key tonic and fifth', false);
   checkbox_key.changed(checkbox_update);
   checkbox_writing = createCheckbox('show performance / score background text', true);
@@ -181,46 +197,14 @@ function setup_controls() {
   createDiv("set the opacity of aligned notes");
   color_slider = createSlider(0, 255, 200,1);
   color_slider.changed(note_slider_update);
-
-
-}
-function setup_the_pianorolls(){
-  // find maximal start and end in performance
-  startmax = min(table.getColumn('onset_sec'));
-  endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
-  durmax = endmax-startmax; 
-  console.log(startmax, endmax, durmax, table.getColumn('onset_sec'))
-
-  // set start and end of selection in performance
-  start = min(table.getColumn('onset_sec'));
-  end = start+5;
-  dur = 5; 
-  
-  // change the test in the description divs
-  note_one_div.elt.innerHTML
-  start_time_div.elt.innerHTML = "set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec";
-  end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec";
-
-  // set pitch of selection in performance
-  pitchmin = min(table.getColumn("pitch"));
-  pitchmax = max(table.getColumn("pitch"));
-  incrementy = floor(300/(pitchmax- pitchmin+1));
-
-  pitchminpart = min(tablepart.getColumn("pitch"));
-  pitchmaxpart = max(tablepart.getColumn("pitch"));
-  incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
-
-  // magnification number
-  width = 10000/80*dur; // 125 pixel / second
-  widthinit = 10000/80*dur; // 125 pixel / second
-
-
-
   //inp.input(myInputEvent);
 
   //slider_start.mousePressed(slider_update);
   
-
+  slider_len.input(slider_update);
+  slider_start.input(slider_update);
+  slider_dur.input(slider_update);
+  slider_key.input(slider_update);
 
   slider_update();
 

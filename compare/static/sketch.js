@@ -1,7 +1,8 @@
 let table;
 let tablep;
 let alignment; 
-let feature
+let zalignment;
+let feature;
 let canva;
 
 let perf = {};
@@ -9,6 +10,9 @@ let score = {};
 let notes = [];
 let keyblocks = [];
 let lines = {};
+let zlines = {};
+let matchl, zmatchl;
+let system_lines;
 
 let slider_start;
 let slider_len;
@@ -53,8 +57,6 @@ let startpart;
 let durpart;
 let endpart;
 
-
-
 let clicked_note = null;
 let right_clicked_note = null;
 let connect_line = null;
@@ -63,6 +65,7 @@ function preload() {
   table = loadTable("static/ppart.csv", 'csv', 'header');
   tablepart = loadTable("static/part.csv", 'csv', 'header');
   alignment = loadTable("static/align.csv", 'csv', 'header');
+  zalignment = loadTable("static/align.csv", 'csv', 'header');
   //__________________________________________________________________________________________
   feature = loadTable("static/feature.csv", 'csv', 'header');
 }
@@ -70,7 +73,31 @@ let err;
 //________________- upload files -__________________________
 function redraw_with_new_files() {
   console.log("get here before loading");
+
   Promise.allSettled([
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[0]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[1]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[2]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[3]), 'csv', 'header', callback = res)}),
+    new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[4]), 'csv', 'header', callback = res)})
+  ])
+  .then(values =>
+    {table = values[3]["value"];
+      tablepart = values[2]["value"];
+      alignment = values[0]["value"];
+      zalignment = values[4]["value"];
+      feature = values[1]["value"];
+      console.log("starting the drawing now!", values); 
+      setup_the_pianorolls();
+    })
+  .catch(errors => {err = errors; alert("error loading one of the uploaded files");})
+
+
+
+
+
+
+  /*Promise.allSettled([
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('perf_csv_input').files[0]), 'csv', 'header', callback = res)}),
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('score_csv_input').files[0]), 'csv', 'header', callback = res)}),
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('align_csv_input').files[0]), 'csv', 'header', callback = res)}),
@@ -86,6 +113,7 @@ function redraw_with_new_files() {
       setup_the_pianorolls();
     })
   .catch(errors => {err = errors; alert("error loading one of the uploaded files");})
+  */
   
 
     /*table = await new Promise((res) => {res(loadTable(URL.createObjectURL(document.getElementById('perf_csv_input').files[0]), 'csv', 'header'))})
@@ -125,7 +153,6 @@ function setup() {
   //__________________________________________________________________________________________
   //frameRate(10);
   noLoop();
-
 }
 
 function setup_controls() {
@@ -154,8 +181,8 @@ function setup_controls() {
   slider_len = createInput("1");
   start_time_div = createDiv("set the beginning of the performance piano roll: default *loading* sec, min *loading* max *loading* sec");
   slider_start = createInput("0");
-  end_time_div = createDiv("set the duration of the performance piano roll: default 10 sec, min 1, max *loading* sec");
-  slider_dur = createInput("10");
+  end_time_div = createDiv("set the duration of the performance piano roll: default *loading* sec, min *loading*, max *loading* sec");
+  slider_dur = createInput("60");
   createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
   slider_key = createInput("0");
 
@@ -165,13 +192,17 @@ function setup_controls() {
   slider_key.input(slider_update);
   checkbox_key = createCheckbox('show key tonic and fifth', false);
   checkbox_key.changed(checkbox_update);
+  checkbox_system = createCheckbox('show staff lines', false);
+  checkbox_system.changed(checkbox_update);
   checkbox_writing = createCheckbox('show performance / score background text', true);
   checkbox_writing.changed(checkbox_update);
   checkbox_alignment = createCheckbox('show alignment lines', true);
   checkbox_alignment.changed(checkbox_update);
+  checkbox_zalignment = createCheckbox('show second alignment lines', false);
+  checkbox_zalignment.changed(checkbox_update);
   checkbox_art = createCheckbox('show articulation values in score', false);
   checkbox_art.changed(checkbox_update);
-  checkbox_tim = createCheckbox('show timing values in score', true);
+  checkbox_tim = createCheckbox('show timing values in score', false);
   checkbox_tim.changed(checkbox_update);
   checkbox_vel = createCheckbox('show velocity values in score', false);
   checkbox_vel.changed(checkbox_update);
@@ -184,12 +215,16 @@ function setup_controls() {
 
 
 }
+
+
+
+
 function setup_the_pianorolls(){
   // find maximal start and end in performance
   startmax = min(table.getColumn('onset_sec'));
   endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
   durmax = endmax-startmax; 
-  console.log(startmax, endmax, durmax, table.getColumn('onset_sec'))
+  console.log(startmax, endmax, durmax, "startmax, endmax, durmax")
 
   // set start and end of selection in performance
   start = min(table.getColumn('onset_sec'));
@@ -197,9 +232,8 @@ function setup_the_pianorolls(){
   dur = 5; 
   
   // change the test in the description divs
-  note_one_div.elt.innerHTML
-  start_time_div.elt.innerHTML = "set the beginning of the performance piano roll: default "+startmax+" sec, min "+startmax+" max "+endmax+" sec";
-  end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default 10 sec, min 1, max "+durmax+" sec";
+  start_time_div.elt.innerHTML = "set the beginning of the performance piano roll: default max(0,start) sec, min "+startmax+" max "+endmax+" sec";
+  end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default min(60,duration) sec, min 1, max "+durmax+" sec";
 
   // set pitch of selection in performance
   pitchmin = min(table.getColumn("pitch"));
@@ -215,16 +249,10 @@ function setup_the_pianorolls(){
   widthinit = 10000/80*dur; // 125 pixel / second
 
 
-
-  //inp.input(myInputEvent);
-
-  //slider_start.mousePressed(slider_update);
-  
-
-
   slider_update();
 
 }
+
 
 function checkbox_update() {
   redraw();
@@ -252,7 +280,7 @@ function slider_update(){
   widthinit = 10000/80*dur;
   // (re)size of canvas
   width = widthinit*max(min(Number(slider_len.value()),10),0.1);
-  console.log(width, start, end, dur);
+  console.log("width, start, end, dur",width, start, end, dur);
   resizeCanvas(width,700);
   background(255);
   fill(0);
@@ -307,7 +335,8 @@ function slider_update(){
   // compute notearrays and match array within the given (start-end)
   notearray= onset_offset_in_limits (table, start, end);
   lastonset= notearray[notearray.length-1][1]-start;
-  matchl = alignment_ids(notearray, alignment, tablepart);
+  matchl = alignment_ids(notearray, alignment, tablepart, true);
+  zmatchl = alignment_ids(notearray, zalignment, tablepart, false);
   notearraypart= onset_offset_in_limits_p (tablepart, startpart, endpart);
 
   notes = [];
@@ -334,15 +363,20 @@ function slider_update(){
     score[notearraypart[r][3]] = new NoteRectangle(xxp,yyp,xep,yep, notearraypart[r][3], "score");
     notes.push(score[notearraypart[r][3]]);
   }
+
+  // generate staff lines
+
+  system_lines = new SystemLines (width);
   
   // generate lines
   lines_from_matchl();
+  zlines_from_zmatchl();
 
   //__________________________________________________________________________________________
   // add articulation to score notes
   for (let r = 0; r < feature.getRowCount(); r++){
   if (feature.getColumn("id")[r] in score) {
-    console
+    
     score[feature.getColumn("id")[r]].vel = feature.getColumn("velocity")[r];
     score[feature.getColumn("id")[r]].art = feature.getColumn("articulation")[r];
     score[feature.getColumn("id")[r]].tim = feature.getColumn("timing")[r];
@@ -350,6 +384,46 @@ function slider_update(){
   }
   click_cleanup();
   redraw();
+}
+
+
+function SystemLines (width) {
+  this.width = width;
+  this.wei = 1;
+  this.col = color(20);
+
+  // G2, B2, D3, F3, A3
+  this.bassclef_notes = [43,47,50,53,57];
+  // E4, G4, B4, D5, F5
+  this.trebleclef_notes = [64,67,71,74,77];
+  this.all_notes = [43,47,50,53,57,64,67,71,74,77];
+  
+  this.setup = function () {
+  this.ycoord_plines = this.all_notes.map(x => {return 700 -(x-pitchminpart+0.5)*incrementypart});
+  this.ycoord_lines = this.all_notes.map(x => {return 300 -(x-pitchmin+0.5)*incrementy});
+  for (let i; i<5; i++) {
+    if (this.ycoord_plines[i] > 700 || this.ycoord_plines[i] < 400) {
+      delete this.ycoord_plines[i];
+    }
+    if (this.ycoord_lines[i] > 300 || this.ycoord_lines[i] < 0) {
+      delete this.ycoord_lines[i];
+    }
+  }
+  }
+  this.setup();
+  
+  this.display = function() {
+    push();
+    this.ycoord_lines.forEach(y => {stroke(this.col); 
+      strokeWeight(this.wei);
+      line(0,y,this.width,y);});
+    this.ycoord_plines.forEach(y => {stroke(this.col);
+        strokeWeight(this.wei);
+        line(0,y,this.width,y);});
+    pop();
+  } 
+ 
+
 }
 
 
@@ -369,10 +443,33 @@ function lines_from_matchl () {
     //print(partnote, partid,  ppartnote, ppartid)
     partnote.link(ppartid); 
     ppartnote.link(partid);
-    lines[partid+ppartid] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid);
+    lines[partid+ppartid] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, false);
   };
 
 }
+
+// generate lines from global variable zmatchl
+function zlines_from_zmatchl () {
+  zlines = {};
+  let ppartid;
+  let partid;
+  let partnote;
+  let ppartnote;
+  for (let r = 0; r < zmatchl.length; r++){
+    ppartid =  zmatchl[r][0];
+    partid =  zmatchl[r][1];
+    if (partid in score && ppartid in perf) {
+      partnote = score[partid];
+      ppartnote = perf[ppartid];
+      //print(partnote, partid,  ppartnote, ppartid)
+      partnote.zlink(ppartid); 
+      ppartnote.zlink(partid);
+      zlines[partid+ppartid] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, true);
+    }
+  };
+
+}
+
 
 
 function draw() {
@@ -389,11 +486,17 @@ function draw() {
       text('score', 25, 600);
     }
     
+    if (checkbox_system.checked()){
+      system_lines.display();
+    }
+
     if (checkbox_key.checked()){
       for(var i = 0; i < keyblocks.length; i++){
         keyblocks[i].display();
       }
     }
+
+    
 
 
   
@@ -421,6 +524,13 @@ function draw() {
     for (var key in lines) {
     
     lines[key].display();
+    
+    }
+  }
+  if (checkbox_zalignment.checked()){
+    for (var key in zlines) {
+    
+    zlines[key].display();
     
     }
   }
@@ -458,14 +568,14 @@ return d
 }
 
 // get an array of alignments from a notearray (performance), an alignment csv and a score note csv
-function alignment_ids (array, alignment, table) {
-  let matchl = [];
+function alignment_ids (array, alignment, table, set_part_times) {
+  let matchlines = [];
   let part_onsets = [];
   //let part_offsets = [];
   for (let r = 0; r < alignment.getRowCount(); r++){
     for (let k = 0; k < array.length; k++){
       if (alignment.getColumn("ppartid")[r] == array[k][3] && alignment.getColumn("matchtype")[r] == "0") {
-        matchl.push([alignment.getColumn("ppartid")[r], alignment.getColumn("partid")[r]]);
+        matchlines.push([alignment.getColumn("ppartid")[r], alignment.getColumn("partid")[r]]);
         let note = table.findRow(alignment.getColumn("partid")[r], "id");
         part_onsets.push(parseFloat(note.obj["onset_beat"]));
         //part_offsets.push(parseFloat(note.obj["onset"])+parseFloat(note.obj["duration"]));
@@ -475,11 +585,13 @@ function alignment_ids (array, alignment, table) {
     }
 
   }
-
-  startpart = Math.min(...part_onsets);
-  durpart = dur/lastonset*(Math.max(...part_onsets)-startpart);
-  endpart = durpart+startpart;
-  return matchl
+  if (set_part_times) {
+    startpart = Math.min(...part_onsets);
+    durpart = dur/lastonset*(Math.max(...part_onsets)-startpart);
+    endpart = durpart+startpart;
+  }
+  
+  return matchlines
 }
 
 
@@ -497,11 +609,13 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
   this.col_line2 = color(124, 124, 0);
   this.name = name;
   this.linked_note = "";
+  this.zlinked_note = "";
   this.textSIZ = 14;
   this.textSIZ_click = 24;
   this.type = type;
   this.clik = false;
   this.rclik = false;
+  this.wei = 1;
   this.vel = vel;
   this.art = art;
   this.tim = tim;
@@ -518,12 +632,17 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
     this.col = color(0,0,255,200);
   }
 
+  this.zlink = function (linked_note_id){
+    this.zlinked_note = linked_note_id;
+  }
+
   this.rebase = function() {
     this.clik = false;
   };
   this.display = function() {
     if (this.clik) {
       stroke(this.col_click);
+      strokeWeight(this.wei);
       textSize(this.textSIZ_click);
       fill(this.col_click);
       rect(this.x, this.y, this.xl, this.yl);
@@ -531,13 +650,16 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
     }
     else if ( this.rclik) {
       stroke(this.col_clickr);
+      strokeWeight(this.wei);
       textSize(this.textSIZ_click);
       fill(this.col_clickr);
       rect(this.x, this.y, this.xl, this.yl);
       text(this.name, this.x,this.y);
     }
     else {
-      stroke(215);
+      
+      stroke(this.col); 
+      strokeWeight(this.wei);
       textSize(this.textSIZ);
       fill(this.col);
       rect(this.x, this.y, this.xl, this.yl);
@@ -709,14 +831,20 @@ function checknoteclicked() {
   redraw();
 }
 
-function NoteLine(x1, y1, x2, y2, perfnote, scorenote) {
+function NoteLine(x1, y1, x2, y2, perfnote, scorenote, zline) {
     this.x1 = x1;
     this.y1 = y1;
     this.x2 = x2;
     this.y2 = y2;
     this.perfnote = perfnote;
     this.scorenote = scorenote;
-    this.col = color(0,200,250);
+    if (zline){
+      this.col = color(0,200,150);
+    }
+    else {
+      this.col = color(0,200,250);
+    }
+    
     this.col_original = color(0,200,250);
     this.wei = 1;
     
