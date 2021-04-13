@@ -181,19 +181,35 @@ function setup_controls() {
   slider_len = createInput("1");
   start_time_div = createDiv("set the beginning of the performance piano roll: default *loading* sec, min *loading* max *loading* sec");
   slider_start = createInput("0");
+  button_jump5 = createButton('jump forwards by 5 seconds');
+  button_jump5.mousePressed(()=>{
+    let val = Number(slider_start.value())+5;
+    slider_start.elt.value = str(val);
+    console.log(val);
+    slider_update();});
+  button_jump5b = createButton('jump backwards by 5 seconds');
+  button_jump5b.mousePressed(()=>{
+      let val = Number(slider_start.value())-5;
+      slider_start.elt.value = str(val);
+      console.log(val);
+      slider_update();});
   end_time_div = createDiv("set the duration of the performance piano roll: default *loading* sec, min *loading*, max *loading* sec");
-  slider_dur = createInput("60");
+  slider_dur = createInput("30");
   createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
   slider_key = createInput("0");
 
-  slider_len.input(slider_update);
+  /*slider_len.input(slider_update);
   slider_start.input(slider_update);
   slider_dur.input(slider_update);
-  slider_key.input(slider_update);
+  slider_key.input(slider_update);*/
+  button_update = createButton('update visualization with the values set above');
+  button_update.mousePressed(slider_update);
   checkbox_key = createCheckbox('show key tonic and fifth', false);
   checkbox_key.changed(checkbox_update);
   checkbox_system = createCheckbox('show staff lines', false);
   checkbox_system.changed(checkbox_update);
+  checkbox_times = createCheckbox('show seconds in performance', true);
+  checkbox_times.changed(checkbox_update);
   checkbox_writing = createCheckbox('show performance / score background text', true);
   checkbox_writing.changed(checkbox_update);
   checkbox_alignment = createCheckbox('show alignment lines', true);
@@ -233,7 +249,7 @@ function setup_the_pianorolls(){
   
   // change the test in the description divs
   start_time_div.elt.innerHTML = "set the beginning of the performance piano roll: default max(0,start) sec, min "+startmax+" max "+endmax+" sec";
-  end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default min(60,duration) sec, min 1, max "+durmax+" sec";
+  end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default min(30,duration) sec, min 1, max "+durmax+" sec";
 
   // set pitch of selection in performance
   pitchmin = min(table.getColumn("pitch"));
@@ -477,6 +493,19 @@ function draw() {
     fill(0);
     stroke(0);
     rect(0,300,width,100);
+
+    if (checkbox_times.checked()){
+      push()
+      stroke(0,0,0,120)
+      strokeWeight(1)
+      textSize(10);
+      for (let i = 0; i< widthinit/125; i++){      
+        line(i*width/widthinit*125,0,i*width/widthinit*125,300);
+        text(str(i+start)+" sec", i*width/widthinit*125, 290);
+      }
+      pop()
+    }
+    
 
     if (checkbox_writing.checked()){
       textSize(300);
@@ -839,7 +868,7 @@ function NoteLine(x1, y1, x2, y2, perfnote, scorenote, zline) {
     this.perfnote = perfnote;
     this.scorenote = scorenote;
     if (zline){
-      this.col = color(0,200,150);
+      this.col = color(255,0,0);
     }
     else {
       this.col = color(0,200,250);
@@ -915,7 +944,9 @@ function change_alignment() {
   
   if (perf_nomore != "") {
     // table
+    console.log("perf no")
     let row = alignment.findRow(perf_nomore, "ppartid");
+    console.log(row)
     row.obj["partid"] = "undefined";
     row.obj["matchtype"] = "2";
     // reset the note
@@ -926,7 +957,9 @@ function change_alignment() {
  
   if (score_nomore != "") {
     // table
+    console.log("scoreno")
     let rowp = alignment.findRow(score_nomore, "partid");
+    console.log(rowp)
     rowp.obj["ppartid"] = "undefined";
     rowp.obj["matchtype"] = "12";
     // reset the note
@@ -934,6 +967,10 @@ function change_alignment() {
     // delete the line
     delete lines[score_nomore+perf_still] ;
   }
+  undefined,0,n4-1,17
+undefined,0,n15-1,21
+undefined,0,n1-1,8
+undefined,0,n21-1,9
 
   
   click_cleanup();
