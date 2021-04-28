@@ -236,6 +236,7 @@ function setup_controls() {
 
 
 function setup_the_pianorolls(){
+  console.log("setup the pianorolls");
   // find maximal start and end in performance
   startmax = min(table.getColumn('onset_sec'));
   endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
@@ -287,6 +288,7 @@ function note_slider_update() {
 
 
 function slider_update(){
+  console.log("slider update");
   // startpoint of performance pr; min firstnote max len-5
   start = max(min(Number(slider_start.value()),endmax-1),startmax);
   // duration of performance pr; min 1, max len-start
@@ -302,6 +304,7 @@ function slider_update(){
   fill(0);
   rect(0,300,width,100);
 
+  console.log("computing reference keyblocks");
   keyblocks = [];
   // compute reference key blocks in performance
   let key = max(min(Number(slider_key.value()),11),0);
@@ -349,16 +352,21 @@ function slider_update(){
 
 
   // compute notearrays and match array within the given (start-end)
+  console.log("computing performance notes within limits");
   notearray= onset_offset_in_limits (table, start, end);
   lastonset= notearray[notearray.length-1][1]-start;
+  console.log("computing matches within limits");
   matchl = alignment_ids(notearray, alignment, tablepart, true);
+  console.log("computing secondary matches within limits");
   zmatchl = alignment_ids(notearray, zalignment, tablepart, false);
+  console.log("computing score notes within limits");
   notearraypart= onset_offset_in_limits_p (tablepart, startpart, endpart);
 
   notes = [];
   perf = {};
   score = {};
-
+  
+  console.log("creating Note Rectangles for performance");
   // generate new NoteRectangles for the performance
   for (let r = 0; r < notearray.length; r++){
     let xx = (notearray[r][1]-start)/dur*width;
@@ -369,7 +377,7 @@ function slider_update(){
     perf[notearray[r][3]] = new NoteRectangle(xx,yy,xe,ye, notearray[r][3], "perf");
     notes.push(perf[notearray[r][3]]);    
   }
-
+  console.log("creating Note Rectangles for score");
   // generate new NoteRectangles for the score
   for (let r = 0; r < notearraypart.length; r++){
     let xxp = (notearraypart[r][1]-startpart)/durpart*width;
@@ -385,11 +393,14 @@ function slider_update(){
   system_lines = new SystemLines (width);
   
   // generate lines
+  console.log("creating Match lines ");
   lines_from_matchl();
+  console.log("creating Match lines original");
   zlines_from_zmatchl();
 
   //__________________________________________________________________________________________
   // add articulation to score notes
+  console.log("creating performance features");
   for (let r = 0; r < feature.getRowCount(); r++){
   if (feature.getColumn("id")[r] in score) {
     
@@ -576,31 +587,73 @@ function draw() {
 
 // get an array of arrays of notes in table that lie within (start-end): performance
 function onset_offset_in_limits (table, start, end) {
-  let d = [];
+
+  let table_cut = table.rows.filter(row => (row.arr[0] >= start) && (row.arr[0]< end))
+  let table_cut_transformed = table_cut.map(row => [row.arr[1], row.arr[0], row.arr[2], row.obj["id"], row.arr[3]])
+  /*let d = [];
   for (let r = 0; r < table.getRowCount(); r++){
     if ( table.getColumn("onset_sec")[r] >= start && table.getColumn("onset_sec")[r] < end) {
       d.push([table.getColumn("duration_sec")[r] ,table.getColumn("onset_sec")[r] ,table.getColumn("pitch")[r], table.getColumn("id")[r],   table.getColumn("velocity")[r]])
     }
-  }
-return d
+  }*/
+return table_cut_transformed
 }
 
 // get an array of arrays of notes in table that lie within (start-end): score
 function onset_offset_in_limits_p (table, start, end) {
+
+  let table_cut = table.rows.filter(row => (row.arr[0] >= start) && (row.arr[0]< end))
+  let table_cut_transformed = table_cut.map(row => [row.arr[1], row.arr[0], row.arr[6], row.arr[8]])
+  
+  /*
   let d = [];
   for (let r = 0; r < table.getRowCount(); r++){
     if ( table.getColumn("onset_beat")[r] >= start && table.getColumn("onset_beat")[r] < end) {
       d.push([table.getColumn("duration_beat")[r] ,table.getColumn("onset_beat")[r] ,table.getColumn("pitch")[r], table.getColumn("id")[r]])
     }
-  }
-return d
+  }*/
+return table_cut_transformed
 }
 
 // get an array of alignments from a notearray (performance), an alignment csv and a score note csv
 function alignment_ids (array, alignment, table, set_part_times) {
+  /*
+  alignment fields:
+  0: "idx"
+  1: "matchtype"
+  2: "partid"
+  3: "ppartid"
+
+  tablepart fields:
+  0: "onset_beat"
+  1: "duration_beat"
+  2: "onset_quarter"
+  3: "duration_quarter"
+  4: "onset_div"
+  5: "duration_div"
+  6: "pitch"
+  7: "voice"
+  8: "id"
+
+  table fields:
+  0: "onset_sec"
+  1: "duration_sec"
+  2: "pitch"
+  3: "velocity"
+  4: "id"
+  */
+
+  let ppart_ids = array.map(x => x[3]);
+  let alignment_lines_to_align = alignment.rows.filter(row => (ppart_ids.includes(row.arr[3]) ) && (row.arr[1] == "0"));
+  let matchlines = alignment_lines_to_align.map(row => [row.arr[3], row.arr[2]]);
+
+  console.log("ppart_ids", ppart_ids)
+  console.log("alignment_lines_to_align", alignment_lines_to_align)
+  console.log("matchlines", matchlines)
+  /*let 
+  part_offsets = [];
   let matchlines = [];
   let part_onsets = [];
-  //let part_offsets = [];
   for (let r = 0; r < alignment.getRowCount(); r++){
     for (let k = 0; k < array.length; k++){
       if (alignment.getColumn("ppartid")[r] == array[k][3] && alignment.getColumn("matchtype")[r] == "0") {
@@ -612,12 +665,17 @@ function alignment_ids (array, alignment, table, set_part_times) {
       }
   
     }
-
-  }
+  }*/
   if (set_part_times) {
+    let part_ids = alignment_lines_to_align.map(row => row.arr[2]);
+    console.log("part ids ", part_ids);
+    let part_notes_for_onsets = table.rows.filter(row => part_ids.includes(row.arr[8]));
+    console.log("part note for onsets ", part_notes_for_onsets);
+    let part_onsets = part_notes_for_onsets.map(row => parseFloat(row.arr[0]));
     startpart = Math.min(...part_onsets);
     durpart = dur/lastonset*(Math.max(...part_onsets)-startpart);
     endpart = durpart+startpart;
+    console.log("set part times: (start, end, dur)", startpart, endpart, durpart);
   }
   
   return matchlines
