@@ -142,26 +142,6 @@ function keyTyped() {
   if (key === 'a') {
     change_alignment();
   } 
-  if (key === '1') {
-    let current_bool = checkbox_alignment.checked();
-    if (current_bool) {
-      checkbox_alignment.checked(false);
-    }
-    else {
-      checkbox_alignment.checked(true);
-    }
-    redraw();
-  } 
-  if (key === '2') {
-    let current_bool = checkbox_zalignment.checked();
-    if (current_bool) {
-      checkbox_zalignment.checked(false);
-    }
-    else {
-      checkbox_zalignment.checked(true);
-    }
-    redraw();
-  } 
 }
 
 function setup() {
@@ -188,7 +168,7 @@ function setup_controls() {
   createDiv("_______________HOWTO________________").style('font-size', "28px")
   createDiv("PARANGONADA visualizes two different alignments. " +
   "The first alignment is colored in light blue and it can be changed using the commands below. " +
-  'The second alignment is colored in red (not shown by default, toggle  or press key "2") and can be used as reference. ')
+  "The second alignment is colored in red (not shown by default, toggle below) and can be used as reference. ")
   createDiv("left click on a note to see its alignment");
   createDiv("right click another note to temporarily align them");
   createDiv("middle click to unmark any notes");
@@ -200,7 +180,7 @@ function setup_controls() {
   createDiv("the note colors whether a note is aligned and whether the first and second alignment agree: ")
   createDiv("matched notes with MATCHING alignments in the first and second alignment. ").style('color',color(0,0,255)); 
   createDiv("insertion / deletion notes with MATCHING non-alignments in the first and second alignment. ").style('color',color(255, 0, 0)); 
-  createDiv("matched notes with MISMATCHING alignments in the first and second alignment. ").style('color',color(255,217,25)); 
+  createDiv("matched notes with MISMATCHING alignments in the first and second alignment. ").style('color',color(204,135,0)); 
   createDiv("matched notes in the first alignment, non-aligned in the second (reference). ").style('color',color(130,130,0)); 
   createDiv("matched notes in the second (reference) alignment, non-aligned in the first. ").style('color',color(0,102,17)); 
   
@@ -245,9 +225,9 @@ function setup_controls() {
   checkbox_times.changed(checkbox_update);
   checkbox_writing = createCheckbox('show performance / score background text', true);
   checkbox_writing.changed(checkbox_update);
-  checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check:', true);
+  checkbox_alignment = createCheckbox('show alignment lines', true);
   checkbox_alignment.changed(checkbox_update);
-  checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check:', false);
+  checkbox_zalignment = createCheckbox('show second alignment lines', false);
   checkbox_zalignment.changed(checkbox_update);
   checkbox_art = createCheckbox('show articulation values in score', false);
   checkbox_art.changed(checkbox_update);
@@ -757,7 +737,7 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
       this.col = color(130,130,0,alpha); // default color no alignment in old (z)
     }
     else {
-      this.col = color(255,217,25,alpha); // default color no alignment in old (z)
+      this.col = color(204,135,0,alpha); // default color no alignment in old (z)
     }
   }
   
