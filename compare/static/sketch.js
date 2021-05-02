@@ -165,29 +165,18 @@ function setup_controls() {
   button_save.mousePressed(save_alignment);
   button_upload = createButton('visualise uploaded files');
   button_upload.mousePressed(redraw_with_new_files);
-  createDiv("_______________HOWTO________________").style('font-size', "28px")
-  createDiv("PARANGONADA visualizes two different alignments. " +
-  "The first alignment is colored in light blue and it can be changed using the commands below. " +
-  "The second alignment is colored in red (not shown by default, toggle below) and can be used as reference. ")
+
   createDiv("left click on a note to see its alignment");
   createDiv("right click another note to temporarily align them");
   createDiv("middle click to unmark any notes");
   createDiv("press key 'a' or button 'change alignment' to fix the alignment");
   createDiv("press button 'save alignment' to download a csv file of note alignments");
-  createDiv("_______________LEGEND________________").style('font-size', "28px")
   note_one_div = createDiv('no note clicked');
   note_two_div = createDiv('no note right clicked');
-  createDiv("the note colors whether a note is aligned and whether the first and second alignment agree: ")
-  createDiv("matched notes with MATCHING alignments in the first and second alignment. ").style('color',color(0,0,255)); 
-  createDiv("insertion / deletion notes with MATCHING non-alignments in the first and second alignment. ").style('color',color(255, 0, 0)); 
-  createDiv("matched notes with MISMATCHING alignments in the first and second alignment. ").style('color',color(204,135,0)); 
-  createDiv("matched notes in the first alignment, non-aligned in the second (reference). ").style('color',color(130,130,0)); 
-  createDiv("matched notes in the second (reference) alignment, non-aligned in the first. ").style('color',color(0,102,17)); 
-  
 
 
 
-  createDiv("_______________SEGMENT PARAMETERS________________").style('font-size', "28px")
+
   createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
   slider_len = createInput("1");
   start_time_div = createDiv("set the beginning of the performance piano roll: default *loading* sec, min *loading* max *loading* sec");
@@ -215,8 +204,6 @@ function setup_controls() {
   slider_key.input(slider_update);*/
   button_update = createButton('update visualization with the values set above');
   button_update.mousePressed(slider_update);
-
-  createDiv("_______________VISUALIZATION TOGGLES________________").style('font-size', "28px")
   checkbox_key = createCheckbox('show key tonic and fifth', false);
   checkbox_key.changed(checkbox_update);
   checkbox_system = createCheckbox('show staff lines', false);
@@ -264,9 +251,6 @@ function setup_the_pianorolls(){
   // change the test in the description divs
   start_time_div.elt.innerHTML = "set the beginning of the performance piano roll: default max(0,start) sec, min "+startmax+" max "+endmax+" sec";
   end_time_div.elt.innerHTML = "set the duration of the performance piano roll: default min(30,duration) sec, min 1, max "+durmax+" sec";
-  slider_start.elt.value = str(max(0,startmax))
-  slider_dur.elt.value = str(min(30,durmax))
-
 
   // set pitch of selection in performance
   pitchmin = min(table.getColumn("pitch"));
@@ -294,7 +278,9 @@ function checkbox_update() {
 function note_slider_update() {
   for(var i = 0; i < notes.length; i++){
     notes[i].feature_vis = feature_slider.value();
-    notes[i].color_code_alignments( color_slider.value());
+    if (notes[i].linked_note != "") {
+      notes[i].col = color(0,0,255, color_slider.value());
+    }
   }
   redraw();
   
@@ -424,8 +410,7 @@ function slider_update(){
   }
   }
   click_cleanup();
-  note_slider_update();
-  //redraw();
+  redraw();
 }
 
 
@@ -703,12 +688,12 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
   this.y = y;
   this.xl = xl;
   this.yl = yl;
-  this.col = color(255, 0, 0); // default color no alignment (RED)
-  this.col_click = color(0, 255, 255); // color clicked (TURQUOISE)
-  this.col_clickr = color(0, 255, 124); // color clicked (LIGHT GREEN)
-  this.col_line = color(255, 0, 124); // color timing
-  this.col_line1 = color(0, 255, 0);  // color articulation
-  this.col_line2 = color(124, 124, 0);  // color velocity
+  this.col = color(255, 0, 0);
+  this.col_click = color(0, 255, 255);
+  this.col_clickr = color(0, 255, 124);
+  this.col_line = color(255, 0, 124);
+  this.col_line1 = color(0, 255, 0);
+  this.col_line2 = color(124, 124, 0);
   this.name = name;
   this.linked_note = "";
   this.zlinked_note = "";
@@ -722,34 +707,16 @@ function NoteRectangle(x, y, xl, yl, name, type, vel=null, art=null, tim=null, f
   this.art = art;
   this.tim = tim;
   this.feature_vis = feature_vis;
-
-  this.color_code_alignments = function(alpha){
-    if ((this.linked_note == "") && (this.zlinked_note == "")) {
-      this.col = color(255, 0, 0, alpha); // default color no alignment (RED)
-    }
-    else if (this.linked_note == this.zlinked_note) {
-      this.col = color(0,0,255,alpha); // default color agreement in alignment (BLUE)
-    }
-    else if ((this.linked_note == "") && (this.zlinked_note != "")) {
-      this.col = color(0,102,17, alpha); // default color no alignment in new
-    }
-    else if ((this.linked_note != "") && (this.zlinked_note == "")) {
-      this.col = color(130,130,0,alpha); // default color no alignment in old (z)
-    }
-    else {
-      this.col = color(204,135,0,alpha); // default color no alignment in old (z)
-    }
-  }
   
   this.reset = function(){
-    //this.col = color(255,0,0);
+    this.col = color(255,0,0);
     this.linked_note = "";
     this.clik = false;
     this.rclik = false;
   }
   this.link = function (linked_note_id){
     this.linked_note = linked_note_id;
-    //this.col = color(0,0,255,200);
+    this.col = color(0,0,255,200);
   }
 
   this.zlink = function (linked_note_id){
@@ -932,11 +899,11 @@ function checknoteclicked() {
       
       if (clicked_note.type == "perf"){// right clicked note is score note
         connect_line = new NoteLine(clicked_note.x, clicked_note.y, right_clicked_note.x, right_clicked_note.y, 
-        clicked_note.name, right_clicked_note.name, false);
+        clicked_note.name, right_clicked_note.name);
       }
       else {// right clicked note is perf note
         connect_line = new NoteLine(clicked_note.x, clicked_note.y, right_clicked_note.x, right_clicked_note.y, 
-        right_clicked_note.name, clicked_note.name, false);
+        right_clicked_note.name, clicked_note.name);
       }
       
       connect_line.wei = 2;
@@ -960,14 +927,12 @@ function NoteLine(x1, y1, x2, y2, perfnote, scorenote, zline) {
     this.scorenote = scorenote;
     if (zline){
       this.col = color(255,0,0);
-      this.col_original = color(255,0,0);
     }
     else {
       this.col = color(0,200,250);
-      this.col_original = color(0,200,250);
     }
     
-    
+    this.col_original = color(0,200,250);
     this.wei = 1;
     
     
@@ -1033,7 +998,7 @@ function change_alignment() {
   score[score_still].link(perf_still);
   perf[perf_still].link(score_still);
   lines[score_still+perf_still] = new NoteLine(score[score_still].x,score[score_still].y,
-                                              perf[perf_still].x,perf[perf_still].y, perf_still, score_still, false);
+                                              perf[perf_still].x,perf[perf_still].y, perf_still, score_still);
   
   if (perf_nomore != "") {
     // table
@@ -1060,7 +1025,10 @@ function change_alignment() {
     // delete the line
     delete lines[score_nomore+perf_still] ;
   }
-  
+  undefined,0,n4-1,17
+undefined,0,n15-1,21
+undefined,0,n1-1,8
+undefined,0,n21-1,9
 
   
   click_cleanup();
