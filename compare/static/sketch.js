@@ -60,7 +60,7 @@ let endpart;
 let clicked_note = null;
 let right_clicked_note = null;
 let connect_line = null;
-
+let vlasss; 
 function preload() {
   table = loadTable("static/ppart.csv", 'csv', 'header');
   tablepart = loadTable("static/part.csv", 'csv', 'header');
@@ -74,6 +74,11 @@ let err;
 function redraw_with_new_files() {
   console.log("get here before loading");
 
+  let file_names = {"align.csv":0, "feature.csv":1, "part.csv":2, "ppart.csv":3, "zalign.csv":4};
+  for (let i = 0; i< document.getElementById('csv_input').files.length; i++) {
+    file_names[document.getElementById('csv_input').files[i].name] = i;
+    console.log(document.getElementById('csv_input').files[i].name, i);
+  }
   Promise.allSettled([
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[0]), 'csv', 'header', callback = res)}),
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[1]), 'csv', 'header', callback = res)}),
@@ -82,12 +87,13 @@ function redraw_with_new_files() {
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[4]), 'csv', 'header', callback = res)})
   ])
   .then(values =>
-    {table = values[3]["value"];
-      tablepart = values[2]["value"];
-      alignment = values[0]["value"];
-      zalignment = values[4]["value"];
-      feature = values[1]["value"];
+    { table = values[file_names["ppart.csv"]]["value"];
+      tablepart = values[file_names["part.csv"]]["value"];
+      alignment = values[file_names["align.csv"]]["value"];
+      zalignment = values[file_names["zalign.csv"]]["value"];
+      feature = values[file_names["feature.csv"]]["value"];
       console.log("starting the drawing now!", values); 
+      vlasss = values;
       setup_the_pianorolls();
     })
   .catch(errors => {err = errors; alert("error loading one of the uploaded files");})
@@ -216,13 +222,13 @@ function setup_controls() {
   button_jump5.mousePressed(()=>{
     let val = Number(slider_start.value())+5;
     slider_start.elt.value = str(val);
-    console.log(val);
+    //console.log(val);
     slider_update();});
   button_jump5b = createButton('jump backwards by 5 seconds');
   button_jump5b.mousePressed(()=>{
       let val = Number(slider_start.value())-5;
       slider_start.elt.value = str(val);
-      console.log(val);
+      //console.log(val);
       slider_update();});
   end_time_div = createDiv("set the duration of the performance piano roll: default *loading* sec, min *loading*, max *loading* sec");
   slider_dur = createInput("30");
@@ -682,9 +688,13 @@ function alignment_ids (array, alignment, table, set_part_times) {
   let alignment_lines_to_align = alignment.rows.filter(row => (ppart_ids.includes(row.arr[3]) ) && (row.arr[1] == "0"));
   let matchlines = alignment_lines_to_align.map(row => [row.arr[3], row.arr[2]]);
 
-  console.log("ppart_ids", ppart_ids)
-  console.log("alignment_lines_to_align", alignment_lines_to_align)
-  console.log("matchlines", matchlines)
+  // LOGGING THE IDS AND MATCHED LINES
+  //console.log("ppart_ids", ppart_ids)
+  //console.log("alignment_lines_to_align", alignment_lines_to_align)
+  //console.log("matchlines", matchlines)
+  
+  
+  
   /*let 
   part_offsets = [];
   let matchlines = [];
@@ -703,14 +713,14 @@ function alignment_ids (array, alignment, table, set_part_times) {
   }*/
   if (set_part_times) {
     let part_ids = alignment_lines_to_align.map(row => row.arr[2]);
-    console.log("part ids ", part_ids);
+    //console.log("part ids ", part_ids);
     let part_notes_for_onsets = table.rows.filter(row => part_ids.includes(row.arr[8]));
-    console.log("part note for onsets ", part_notes_for_onsets);
+    //console.log("part note for onsets ", part_notes_for_onsets);
     let part_onsets = part_notes_for_onsets.map(row => parseFloat(row.arr[0]));
     startpart = Math.min(...part_onsets);
     durpart = dur/lastonset*(Math.max(...part_onsets)-startpart);
     endpart = durpart+startpart;
-    console.log("set part times: (start, end, dur)", startpart, endpart, durpart);
+    //console.log("set part times: (start, end, dur)", startpart, endpart, durpart);
   }
   
   return matchlines
