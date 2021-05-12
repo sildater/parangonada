@@ -145,8 +145,8 @@ function setup() {
   canvaBuffer = createGraphics(windowWidth-canvaBuffer_offsets[2], 700);
   canva.mousePressed(checknoteclicked);
 
-  polySynth = new p5.PolySynth();
-  polySynth.setADSR(0.05,0.05,1.0, 0.05);
+  polySynth = new Tone.Sampler(sampler_kwargs).toDestination();
+  //polySynth.setADSR(0.05,0.05,1.0, 0.05);
 
   default_colors = {match:color(0, 0, 0, 160),
                     indel:color(183, 172, 68, 230),
@@ -265,7 +265,7 @@ function setup_controls() {
   feature_slider.changed(note_slider_update);
   createDiv("____ note visualization _____")
   createDiv("set the opacity of aligned notes");
-  color_slider = createSlider(0, 255, 200,1);
+  color_slider = createSlider(0, 255, 160,1);
   color_slider.changed(note_slider_update);
   createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
   slider_len = createInput("1");
@@ -356,7 +356,7 @@ function draw() {
     arrows[i].display();
   }
   if (playing) {
-    let current_time = getAudioContext().currentTime;
+    let current_time = Tone.getContext().currentTime;
     //console.log("frame count", frameCount, currentTime);
     if (count_offset == 0) {
       console.log("started")
@@ -375,7 +375,11 @@ function draw() {
     for (let note in next_notes) {next_notes[note]
       //console.log(next_notes[note][3])
       //console.log("note pitch", parseFloat(next_notes[note][2]), "vel", parseFloat(next_notes[note][4]),"when",parseFloat(next_notes[note][1])-playhead,"how long", parseFloat(next_notes[note][0]));
-      polySynth.play(midiToFreq(parseFloat(next_notes[note][2])),2**(7*parseFloat(next_notes[note][4])/127)/128,parseFloat(next_notes[note][1])-playhead,parseFloat(next_notes[note][0]));
+      polySynth.triggerAttackRelease(Tone.Frequency(next_notes[note][2], "midi").toFrequency(),
+        str(next_notes[note][0]),
+        "+"+str(next_notes[note][1]-playhead),
+        parseFloat(next_notes[note][4])/127
+        );
     }
   }
   count_offset = frameCount;

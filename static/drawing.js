@@ -50,7 +50,7 @@ function compute_piano_roll_display_elements() {
         let yyp = 700-(notearraypart[r][2]-pitchminpart+1)*incrementypart;
         let xep = notearraypart[r][0]/durpart*width;
         let yep = incrementypart;
-        score[notearraypart[r][3]] = new NoteRectangle(xxp,yyp,xep,yep, notearraypart[r][3], "score", int(notearraypart[r][2]));
+        score[notearraypart[r][3]] = new NoteRectangle(xxp,yyp,xep,yep, notearraypart[r][3], "score", parseInt(notearraypart[r][2]));
         notes.push(score[notearraypart[r][3]]);
       }
 
@@ -254,11 +254,3 @@ function compute_other_display_elements(){
     }
   
 
-    function pitch_spelling(note) {
-      //let key = max(min(Number(slider_key.value()),11),0);
-      let note_names = ["C","C#", "D","D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
-      let offset = int(note.pitch%12)
-      let octave = str(int((note.pitch-note.pitch%12)/12)-1);
-      note.spelled_pitch = note_names[offset]+octave;
-    }
