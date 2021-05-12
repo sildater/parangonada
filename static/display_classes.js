@@ -1,8 +1,8 @@
 //________________- NoteRectangle Class -__________________________
 
 function NoteRectangle(x, y, xl, yl, 
-                        name, type, 
-                        vel=null, art=null, tim=null, feature_vis = 2 ) {
+                        name, type, pitch=0,
+                        vel=null, art=null, tim=null, feature_vis = 2) {
     this.x = x;
     this.y = y;
     this.xl = xl;
@@ -14,6 +14,8 @@ function NoteRectangle(x, y, xl, yl,
     this.col_line1 = default_colors.articulation;  // color articulation
     this.col_line2 = default_colors.velocity;  // color velocity
     this.name = name;
+    this.pitch = pitch;
+    this.spelled_pitch = "";
     this.linked_note = "";
     this.zlinked_note = "";
     this.textSIZ = 14;
@@ -63,7 +65,7 @@ function NoteRectangle(x, y, xl, yl,
       this.zlinked_note = linked_note_id;
     }
   
-    this.display = function(offsets) {
+    this.display = function(offsets, pitch_text) {
 
         let within_canvas = (this.x+this.xl-offsets[this.offset_id]>= 0) && (this.x-offsets[this.offset_id]< canvaBuffer.width);
         if (within_canvas) {
@@ -88,7 +90,12 @@ function NoteRectangle(x, y, xl, yl,
         canvaBuffer.fill(this.col);
       }
         canvaBuffer.rect(this.x-offsets[this.offset_id], this.y, this.xl, this.yl);
-        canvaBuffer.text(this.name, this.x-offsets[this.offset_id],this.y);
+        if (pitch_text) {
+          canvaBuffer.text(this.spelled_pitch, this.x-offsets[this.offset_id],this.y-1);
+        } else {
+          canvaBuffer.text(this.name, this.x-offsets[this.offset_id],this.y-1);
+        }
+        
         canvaBuffer.pop();
     }
     }

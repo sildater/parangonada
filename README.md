@@ -13,17 +13,17 @@ to visualize files in the match file format
 ## planned updates:
 * simple python API to generate alignment data files
 * match file format reference
-* clefs
-* pitch names toggle
-* black staff lines
 * piano keyboard
 * documented code
-* scroll option (update left and right)
 * cleaned DOM interface
-* default option full piece!
 * tutorial video
 * more appealing color palette for notes
 * fix alignment export
 * better piano soundfont
 
-
+done:
+* pitch names toggle
+* black staff lines
+* clefs
+* default option full piece!
+* scroll option (update left and right)

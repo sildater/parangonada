@@ -148,7 +148,7 @@ function setup() {
   polySynth = new p5.PolySynth();
   polySynth.setADSR(0.05,0.05,1.0, 0.05);
 
-  default_colors = {match:color(10,10,10, 230),
+  default_colors = {match:color(0,0,20, 200),
                     mismatch:color(150,0,25, 230),
                     indel:color(0, 50, 0, 230),
                     match1indel2:color(130,130,0),
@@ -159,7 +159,7 @@ function setup() {
                     system_lines:color(20),
                     noteline_rclicked: color(230,130,0,230),
                     noteline_clicked: color(255,170,0,230),
-                    noteline: color(0, 102, 153),
+                    noteline: color(0, 170,204),
                     znoteline: color(200,0,0),
                     connectline: color(230,230,0,230),
                     
@@ -234,6 +234,8 @@ function setup_controls() {
   slider_key = createInput("0");
   checkbox_key = createCheckbox('show key tonic and fifth', false);
   checkbox_key.changed(checkbox_update_key);
+  checkbox_pitch = createCheckbox('show pitch', false);
+  checkbox_pitch.changed(checkbox_update);
   checkbox_system = createCheckbox('show staff lines', true);
   checkbox_system.changed(checkbox_update);
   checkbox_times = createCheckbox('show seconds in performance', true);
@@ -495,13 +497,14 @@ function canvabuffer_draw() {
 
     if (checkbox_key.checked()){
       for(var i = 0; i < keyblocks.length; i++){
-        keyblocks[i].display([0,0]);
+        keyblocks[i].display([0,0],false);
       }
     }
 
 
   for(var i = 0; i < notes.length; i++){
-    notes[i].display(offsets);
+    console.log("checkbox pitch", checkbox_pitch.checked())
+    notes[i].display(offsets,checkbox_pitch.checked());
   }
 
 

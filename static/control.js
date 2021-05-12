@@ -137,6 +137,9 @@ function keyTyped() {
   }
   function checkbox_update_key() {
     generate_keyblocks();
+    for(var i = 0; i < notes.length; i++){
+      pitch_spelling(notes[i]);
+    }
     checkbox_update();
   }
   
@@ -144,6 +147,7 @@ function keyTyped() {
     for(var i = 0; i < notes.length; i++){
       notes[i].feature_vis = feature_slider.value();
       notes[i].color_code_alignments( color_slider.value());
+      pitch_spelling(notes[i]);
     }
     checkbox_update();
   }
