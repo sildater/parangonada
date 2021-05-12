@@ -1008,11 +1008,13 @@ function SystemLines (width) {
   
   this.display = function() {
     canvaBuffer.push();
+    canvaBuffer.stroke(this.col);
+    canvaBuffer.strokeWeight(this.wei);
     this.ycoord_lines.forEach(y => {stroke(this.col); 
-      canvaBuffer.strokeWeight(this.wei);
+      
       canvaBuffer.line(0,y,this.width,y);});
     this.ycoord_plines.forEach(y => {stroke(this.col);
-      canvaBuffer.strokeWeight(this.wei);
+    
       canvaBuffer.line(0,y,this.width,y);});
       canvaBuffer.pop();
   } 
