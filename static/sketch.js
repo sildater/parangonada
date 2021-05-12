@@ -148,30 +148,35 @@ function setup() {
   polySynth = new p5.PolySynth();
   polySynth.setADSR(0.05,0.05,1.0, 0.05);
 
-  default_colors = {match:color(0,0,20, 200),
-                    mismatch:color(150,0,25, 230),
-                    indel:color(0, 50, 0, 230),
-                    match1indel2:color(130,130,0),
-                    match2indel1:color(0,102,17),
+  default_colors = {match:color(0, 0, 0, 160),
+                    indel:color(183, 172, 68, 230),
                     clicked_note: color(255,170,0,230),
-                    rclicked_note: color(230,130,0,230),
+                    rclicked_note: color(255,130,0,230),
+                    mismatch:color(255, 100, 0, 230),
+                    match1indel2:color(255, 69, 0,230),
+                    match2indel1:color(223, 54, 45, 230),
+                    
+
+                    
+                    noteline_rclicked: color(255,130,0,230),
+                    noteline_clicked: color(255,170,0,230),
+                    connectline: color(255,255,0,230),
+                    noteline: color(0, 150,174),
+
 
                     system_lines:color(20),
-                    noteline_rclicked: color(230,130,0,230),
-                    noteline_clicked: color(255,170,0,230),
-                    noteline: color(0, 150,174),
                     znoteline: color(200,0,0),
-                    connectline: color(230,230,0,230),
+                    
                     
                     articulation: color(120,03,204),
                     velocity: color(134,56,167),
                     timing: color(124,67,198),
 
-                    arrow_background: color(100,100,100,150),
-                    arrow: color(20,20,20,200),
-                    background_text: color(0, 102, 153, 71),
-                    timepoints:color(0,0,0,200),
-                    timepoints_text:color(255,255,255,200),
+                    arrow_background: color(150,150,150,150),
+                    arrow: color(0,0,0,160), // like match note
+                    background_text: color(0, 150,174, 71), // like noteline
+                    timepoints:color(0,0,0,160),
+                    timepoints_text:color(255,255,255,255),
                     keyblock_tonic: color(100,0,0,50),
                     keyblock_fifth: color(50,50,50,50),
                     tapping_line:color(240,240,0)
@@ -503,7 +508,6 @@ function canvabuffer_draw() {
 
 
   for(var i = 0; i < notes.length; i++){
-    console.log("checkbox pitch", checkbox_pitch.checked())
     notes[i].display(offsets,checkbox_pitch.checked());
   }
 

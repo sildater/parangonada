@@ -260,6 +260,5 @@ function compute_other_display_elements(){
 
       let offset = int(note.pitch%12)
       let octave = str(int((note.pitch-note.pitch%12)/12)-1);
-      console.log(note, offset, octave);
       note.spelled_pitch = note_names[offset]+octave;
     }

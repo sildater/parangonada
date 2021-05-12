@@ -157,6 +157,7 @@ function keyTyped() {
     beat_start = parseFloat(slider_beat_start.value());
     beat_interval = parseFloat(slider_beat_interval.value());
     starthead = parseFloat(slider_start_align.value());//+offsets[0]/125*(widthinit/width);
+    playhead = starthead;
     pixel_offset_starthead = (starthead-start)/125*(widthinit/width);
     redraw();
     console.log("update tapping parameters", beat_start, beat_interval, starthead);
