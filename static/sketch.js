@@ -159,7 +159,7 @@ function setup() {
                     system_lines:color(20),
                     noteline_rclicked: color(230,130,0,230),
                     noteline_clicked: color(255,170,0,230),
-                    noteline: color(0, 170,204),
+                    noteline: color(0, 150,174),
                     znoteline: color(200,0,0),
                     connectline: color(230,230,0,230),
                     
