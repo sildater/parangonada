@@ -105,7 +105,12 @@ function NoteRectangle(x, y, xl, yl,
         canvaBuffer.push();
         canvaBuffer.fill(0,0,0,0);
         canvaBuffer.strokeWeight(2);
-        canvaBuffer.stroke(this.col_line)
+        //canvaBuffer.stroke(this.col_line)
+        if (this.tim > 0) {
+          canvaBuffer.stroke(this.col_line)
+        } else {
+          canvaBuffer.stroke(color(240,10,10,200))
+        }
         canvaBuffer.line(this.x-offsets[this.offset_id],this.y,this.x-offsets[this.offset_id]-this.tim*this.feature_vis, this.y)
         canvaBuffer.circle(this.x-offsets[this.offset_id]-this.tim*this.feature_vis, this.y, 10);
         canvaBuffer.pop();
@@ -131,6 +136,12 @@ function NoteRectangle(x, y, xl, yl,
         canvaBuffer.strokeWeight(2);
         canvaBuffer.fill(0,0,0,0);
         canvaBuffer.stroke(this.col_line2)
+        /*if (this.vel > 0) {
+          canvaBuffer.stroke(this.col_line2)
+        } else {
+          canvaBuffer.stroke(color(240,10,10,200))
+        }*/
+        
         canvaBuffer.line(this.x-offsets[this.offset_id]+this.xl/2,this.y,this.x-offsets[this.offset_id]+this.xl/2, this.y-this.vel*this.feature_vis)
         canvaBuffer.circle(this.x-offsets[this.offset_id]+this.xl/2, this.y-this.vel*this.feature_vis, 10);
         canvaBuffer.pop();

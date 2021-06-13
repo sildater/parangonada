@@ -170,7 +170,7 @@ function setup() {
                     
                     articulation: color(120,03,204),
                     velocity: color(134,56,167),
-                    timing: color(124,67,198),
+                    timing: color(67,124,198),
 
                     arrow_background: color(150,150,150,150),
                     arrow: color(0,0,0,160), // like match note
