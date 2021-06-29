@@ -220,6 +220,7 @@ function setup_controls() {
   createDiv("right click another note to temporarily align them");
   createDiv("middle click to unmark any notes");
   createDiv("press key 'a' or button 'change alignment' to fix the alignment");
+  createDiv("press key 's' to delete an alignment");
   createDiv("press button 'save alignment' to download a csv file of note alignments");
 
   createDiv("_______________LEGEND________________").style('font-size', "28px")

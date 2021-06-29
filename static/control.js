@@ -6,6 +6,9 @@ function keyTyped() {
     if (key === 'a') {
       change_alignment();
     }
+    if (key === 's') {
+      delete_alignment();
+    }
     if (key === 't' && playing) {
       add_line();
     } 
@@ -223,6 +226,7 @@ function keyTyped() {
     newRow.setString('ppartid',perf_still);
     newRow.setString('partid', score_still);
     newRow.setString('matchtype', '0');
+    newRow.setString('idx', (alignment.rows.length-1).toString());
     // reset the notes
     score[score_still].reset();
     perf[perf_still].reset();
@@ -233,11 +237,11 @@ function keyTyped() {
     
     if (perf_nomore != "") {
       // table
-      console.log("perf no")
+      console.log("perf nomore in realigment", perf_nomore)
       let row = alignment.findRow(perf_nomore, "ppartid");
       console.log(row)
-      row.obj["partid"] = "undefined";
-      row.obj["matchtype"] = "2";
+      row.setString("partid", "undefined");
+      row.setString("matchtype", "2");
       // reset the note
       perf[perf_nomore].reset();
       // delete the line
@@ -249,8 +253,8 @@ function keyTyped() {
       console.log("scoreno")
       let rowp = alignment.findRow(score_nomore, "partid");
       console.log(rowp)
-      rowp.obj["ppartid"] = "undefined";
-      rowp.obj["matchtype"] = "12";
+      rowp.setString("ppartid", "undefined");
+      rowp.setString("matchtype", "1");
       // reset the note
       score[score_nomore].reset();
       // delete the line
@@ -269,4 +273,68 @@ function keyTyped() {
     alert("mark two notes for alignment...");
   }
     
+  }
+
+
+  function delete_alignment() {
+    // check if something is clicked
+    if (clicked_note || right_clicked_note){
+      // check if only one is clicked
+      if (clicked_note && right_clicked_note) {
+        alert("click only one note to delete its alignment");
+      }
+      else {
+        let clicked_note_neutral = null;
+        if (clicked_note) {
+          clicked_note_neutral = clicked_note;
+        }
+        else {
+          clicked_note_neutral = right_clicked_note
+        }
+        
+        // check if there is an alignment
+        if (clicked_note_neutral.linked_note =="") {
+          alert("click a note with existing alignment to delete the alignment")
+        }
+
+
+
+        else {
+          // now do the deleting
+          let score_nomore;
+          let perf_nomore;
+          if (clicked_note_neutral.type == "perf")
+          {
+             score_nomore =  clicked_note_neutral.linked_note;
+             perf_nomore =  clicked_note_neutral.name;
+          }
+          else{
+             score_nomore =  clicked_note_neutral.name;
+             perf_nomore =  clicked_note_neutral.linked_note;
+          }
+          
+            let newRow = alignment.addRow();
+            newRow.setString('ppartid',"undefined");
+            newRow.setString('partid', score_nomore);
+            newRow.setString('matchtype', '1');
+            newRow.setString('idx', (alignment.rows.length-1).toString());
+            // table
+
+            let row = alignment.findRow(perf_nomore, "ppartid");
+            row.setString("partid", "undefined");
+            row.setString("matchtype","2");
+
+
+            // reset the notes
+            perf[perf_nomore].reset();
+            score[score_nomore].reset();
+            // delete the line
+            delete lines[score_nomore+perf_nomore] ;
+          
+
+          click_cleanup();
+
+        }
+      }
+    }
   }
