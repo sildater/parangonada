@@ -198,6 +198,10 @@ function keyTyped() {
   }
   
   
+
+
+
+
   
   function change_alignment() {
     if (clicked_note && right_clicked_note){
@@ -221,12 +225,7 @@ function keyTyped() {
        score_still = clicked_note.name;
        perf_nomore =  clicked_note.linked_note;
     }
-    // table
-    let newRow = alignment.addRow();
-    newRow.setString('ppartid',perf_still);
-    newRow.setString('partid', score_still);
-    newRow.setString('matchtype', '0');
-    newRow.setString('idx', (alignment.rows.length-1).toString());
+
     // reset the notes
     score[score_still].reset();
     perf[perf_still].reset();
@@ -235,8 +234,8 @@ function keyTyped() {
     lines[score_still+perf_still] = new NoteLine(score[score_still].x,score[score_still].y,
                                                 perf[perf_still].x,perf[perf_still].y, perf_still, score_still, false);
     
-    if (perf_nomore != "") {
-      // table
+    if (perf_nomore != "" && score_nomore != "") {
+      // reset former perf note in alignment
       console.log("perf nomore in realigment", perf_nomore)
       let row = alignment.findRow(perf_nomore, "ppartid");
       console.log(row)
@@ -246,10 +245,8 @@ function keyTyped() {
       perf[perf_nomore].reset();
       // delete the line
       delete lines[score_still+perf_nomore] ;
-    }
-   
-    if (score_nomore != "") {
-      // table
+
+      // reset former score note in alignment
       console.log("scoreno")
       let rowp = alignment.findRow(score_nomore, "partid");
       console.log(rowp)
@@ -259,6 +256,87 @@ function keyTyped() {
       score[score_nomore].reset();
       // delete the line
       delete lines[score_nomore+perf_still] ;
+
+      // add new alignment  to table
+      let newRow = alignment.addRow();
+      newRow.setString('ppartid',perf_still);
+      newRow.setString('partid', score_still);
+      newRow.setString('matchtype', '0');
+      newRow.setString('idx', (alignment.rows.length-1).toString());
+
+
+
+    } else if (perf_nomore != "" && score_nomore == "") {
+
+      // reset former perf note in alignment
+      console.log("perf nomore in realigment", perf_nomore)
+      let row = alignment.findRow(perf_nomore, "ppartid");
+      console.log(row)
+      row.setString("partid", "undefined");
+      row.setString("matchtype", "2");
+      // reset the note
+      perf[perf_nomore].reset();
+      // delete the line
+      delete lines[score_still+perf_nomore] ;
+
+
+      // newly align former unaligned perf note
+      let rowp = alignment.findRow(perf_still, "ppartid");
+      rowp.setString("partid", score_still);
+      rowp.setString("matchtype","0");
+
+      // // reset former score note in alignment
+      // console.log("scoreno")
+      // let rowp = alignment.findRow(score_nomore, "partid");
+      // console.log(rowp)
+      // rowp.setString("ppartid", "undefined");
+      // rowp.setString("matchtype", "1");
+      // // reset the note
+      // score[score_nomore].reset();
+      // // delete the line
+      // delete lines[score_nomore+perf_still] ;
+
+      // // add new alignment  to table
+      // let newRow = alignment.addRow();
+      // newRow.setString('ppartid',perf_still);
+      // newRow.setString('partid', score_still);
+      // newRow.setString('matchtype', '0');
+      // newRow.setString('idx', (alignment.rows.length-1).toString());
+
+    } else if (perf_nomore == "" && score_nomore != ""){
+
+      // reset former score note in alignment
+      console.log("scoreno")
+      let rowp = alignment.findRow(score_nomore, "partid");
+      console.log(rowp)
+      rowp.setString("ppartid", "undefined");
+      rowp.setString("matchtype", "1");
+      // reset the note
+      score[score_nomore].reset();
+      // delete the line
+      delete lines[score_nomore+perf_still] ;
+
+
+      // newly align former unaligned score note
+      let row = alignment.findRow(score_still, "partid");
+      row.setString("ppartid", perf_still);
+      row.setString("matchtype","0");
+
+
+    } else if (perf_nomore == "" && score_nomore == ""){
+
+      // set former unaligned perf note line to None
+      let row2 = alignment.findRow(perf_still, "ppartid");
+      row2.setString("partid", "None");
+      row2.setString("matchtype","None");
+      row2.setString("ppartid","None");
+
+      // newly align former unaligned score note
+      let row = alignment.findRow(score_still, "partid");
+      row.setString("ppartid", perf_still);
+      row.setString("matchtype","0");
+
+
     }
     
   
@@ -274,6 +352,11 @@ function keyTyped() {
   }
     
   }
+
+
+
+
+
 
 
   function delete_alignment() {
