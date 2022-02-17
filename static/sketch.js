@@ -1,3 +1,5 @@
+//________________- declare global variables -__________________________
+
 let table;
 let tablep;
 let alignment; 
@@ -8,8 +10,10 @@ let treble_clef;
 let bass_clef
 
 let canva;
+let canvaHeight;
 let canvaBuffer;
-let offsets;
+//let offsets;
+let position;
 let canvaBuffer_offsets;
 let default_colors;
 
@@ -24,7 +28,7 @@ let matchl, zmatchl;
 let system_lines;
 
 let slider_start;
-let slider_len;
+// let slider_len;
 let slider_dur;
 let slider_key;
 
@@ -74,6 +78,25 @@ let connect_line = null;
 let err;
 let polySynth;
 
+
+let playhead ;
+let start_time;
+//let pixel_offset_starthead ;
+
+let count_offset ;
+let playing ;
+
+let future_notes;
+let next_notes;
+
+let beat_start;
+let beat_interval;
+
+let annotation_lines;
+let last_beats;
+
+//________________- preload files -__________________________
+
 function preload() {
   table = loadTable("static/default_data/ppart.csv", 'csv', 'header');
   tablepart = loadTable("static/default_data/part.csv", 'csv', 'header');
@@ -102,7 +125,7 @@ img.updatePixels();
 }
 
 //________________- upload files -__________________________
-//________________TODO: deal with missing files__________________________
+
 function redraw_with_new_files() {
   console.log("get here before loading");
 
@@ -133,20 +156,69 @@ function redraw_with_new_files() {
   
 }
 
-
-
 //________________- SETUP -__________________________
 
 function setup() {
-  offsets = [-100,-100];
-  canvaBuffer_offsets = [50,100, 150];
-  //setup the canvas
-  canva = createCanvas(windowWidth,700);
-  canvaBuffer = createGraphics(windowWidth-canvaBuffer_offsets[2], 700);
-  canva.mousePressed(checknoteclicked);
+  window.onresize = setup_score_and_performance;
+  //offsets = [-100,-100];
+  canvaBuffer_offsets = [50,50,100];
+  canvaHeight = 1100;
+  position = {
+    offset_score: -100,
+    offset_performance: -100,
+    previous_offset_score: -100,
+    previous_offset_performance: -100,
+    pixel_per_sec: 125,
+    pixel_per_beat: 125,
+    starthead: 0,
+    pixel_offset_starthead: 0,
+    move_starthead_with_performance: true,
+    offsets: function() {
+      return [this.offset_performance, this.offset_score]
+    },
+    increment: function(inc, score, perf, prev, starth) {
+      if (score && prev) {
+        this.offset_score += inc;
+        this.previous_offset_score += inc;
+      } else if (score && !prev) {
+        this.offset_score += inc;
+      }
+      if (perf && prev) {  
+        this.offset_performance += inc;
+        this.previous_offset_performance += inc;
+      } else if (perf && !prev) {
+        this.offset_performance += inc;
+      }
+      if ((starth) || (this.move_starthead_with_performance && perf)) {
+        this.starthead += inc/this.pixel_per_sec;
+        print(inc, (this.starthead-start))
+        this.pixel_offset_starthead = (this.starthead-start)*this.pixel_per_sec;
+        print(this.pixel_offset_starthead)
+        playhead = this.starthead;
+      }
+    }
+  }
+  
 
+  //player variable values
+  playhead = 0;
+  start_time=0;
+  //pixel_offset_starthead = 0;
+  count_offset = 1;
+  playing = false;
+  future_notes = [];
+  next_notes = [];
+  beat_start = 0.0;
+  beat_interval = 0.5;
+  annotation_lines = [];
+  last_beats = 0;
   polySynth = new Tone.Sampler(sampler_kwargs).toDestination();
   //polySynth.setADSR(0.05,0.05,1.0, 0.05);
+
+  //setup the canvas
+  canva = createCanvas(windowWidth-70,canvaHeight);
+  canvaBuffer = createGraphics(windowWidth-70-canvaBuffer_offsets[2], canvaHeight);
+  canva.mousePressed(checknoteclicked);
 
   default_colors = {match:color(0, 0, 0, 160),
                     indel:color(183, 172, 68, 230),
@@ -174,7 +246,7 @@ function setup() {
 
                     arrow_background: color(150,150,150,150),
                     arrow: color(0,0,0,160), // like match note
-                    background_text: color(0, 150,174, 71), // like noteline
+                    background_text: color(150, 150,174, 71),//color(0, 150,174, 71), // like noteline
                     timepoints:color(0,0,0,160),
                     timepoints_text:color(255,255,255,255),
                     keyblock_tonic: color(100,0,0,50),
@@ -185,188 +257,138 @@ function setup() {
   alpha_clefs(treble_clef);
   alpha_clefs(bass_clef);
   setup_controls();
+  
   setup_score_and_performance();
+  align_slider_update(); 
   //__________________________________________________________________________________________
   frameRate(30);
   noLoop();
-}
-
-function setup_score_and_performance() {
-  setup_the_pianorolls();
-  compute_piano_roll_display_elements();
-  compute_other_display_elements();
-  click_cleanup();
-  align_slider_update();
 }
 
 //________________- Setup the text and controls -__________________________
 
 function setup_controls() {
   // buttons and divs on the page
-  button_change = createButton('change alignment');
+  button_change = createButton('change alignment').parent("info_buttons_alignment");
   //button.position(19, 19);
-  button_change.mousePressed(change_alignment);
-  button_save = createButton('save alignment');
+  button_change.mousePressed(change_alignment)
+  button_save = createButton('save alignment').parent("info_buttons_alignment");
   //button.position(19, 19);
   button_save.mousePressed(save_alignment);
-  button_upload = createButton('visualise uploaded files');
+  button_upload = createButton('visualise uploaded files').parent("info_buttons");
   button_upload.mousePressed(redraw_with_new_files);
 
-  createDiv("_______________HOWTO________________").style('font-size', "28px")
-  createDiv("PARANGONADA visualizes two possibly different alignments. " +
+  createDiv("_PARANGONDA________________").style('font-size', "28px").parent("info_title")
+  //createDiv("PARANGONADA").style('font-size', "28px").parent("info")
+  createDiv("PARANGONADA visualizes one or two possibly different alignments of a score and a performance. " +
   "The first alignment is colored in light blue and it can be changed using the commands below. " +
-  'The second alignment is colored in red (not shown by default, toggle  or press key "2") and can be used as reference. ')
-  createDiv("left click on a note to see its alignment");
-  createDiv("right click another note to temporarily align them");
-  createDiv("middle click to unmark any notes");
-  createDiv("press key 'a' or button 'change alignment' to fix the alignment");
-  createDiv("press key 's' to delete an alignment");
-  createDiv("press button 'save alignment' to download a csv file of note alignments");
+  'The second alignment is colored in red (not shown by default, toggle  or press key "2") and can be used as reference. ').parent("info")
+  createDiv("left click on a note to see its alignment").parent("info");
+  createDiv("right click another note to temporarily align them").parent("info");
+  createDiv("middle click to unmark any notes").parent("info");
+  createDiv("press key 'a' or button 'change alignment' to fix the alignment").parent("info");
+  createDiv("press key 's' to delete an alignment").parent("info");
+  createDiv("press button 'save alignment' to download a csv file of note alignments").parent("info");
 
-  createDiv("_______________LEGEND________________").style('font-size', "28px")
-  note_one_div = createDiv('no note clicked');
-  note_two_div = createDiv('no note right clicked');
-  createDiv("the note colors whether a note is aligned and whether the first and second alignment agree: ")
-  createDiv("matched notes with MATCHING alignments in the first and second alignment. ").style('color',default_colors.match); 
-  createDiv("insertion / deletion notes with MATCHING non-alignments in the first and second alignment. ").style('color',default_colors.indel); 
-  createDiv("matched notes with MISMATCHING alignments in the first and second alignment. ").style('color',default_colors.mismatch); 
-  createDiv("matched notes in the first alignment, non-aligned in the second (reference). ").style('color',default_colors.match1indel2); 
-  createDiv("matched notes in the second (reference) alignment, non-aligned in the first. ").style('color',default_colors.match2indel1); 
+  createDiv("_LEGEND________________").style('font-size', "28px").parent("legend")
+  note_one_div = createDiv('no note clicked').parent("legend");
+  note_two_div = createDiv('no note right clicked').parent("legend");
+  createDiv("the note colors whether a note is aligned and whether the first and second alignment agree: ").parent("legend")
+  createDiv("matched notes with MATCHING alignments in the first and second alignment. ").style('color',default_colors.match).parent("legend"); 
+  createDiv("insertion / deletion notes with MATCHING non-alignments in the first and second alignment. ").style('color',default_colors.indel).parent("legend"); 
+  createDiv("matched notes with MISMATCHING alignments in the first and second alignment. ").style('color',default_colors.mismatch).parent("legend"); 
+  createDiv("matched notes in the first alignment, non-aligned in the second (reference). ").style('color',default_colors.match1indel2).parent("legend"); 
+  createDiv("matched notes in the second (reference) alignment, non-aligned in the first. ").style('color',default_colors.match2indel1).parent("legend"); 
   
 
-  createDiv("_______________VISUALIZATION PARAMETERS________________").style('font-size', "28px")
-  createDiv("____ score and performance metadata _____")
-  createDiv("set the key for tonic and fifth highlighting, 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B");
-  slider_key = createInput("0");
-  checkbox_key = createCheckbox('show key tonic and fifth', false);
+  createDiv("_VISUALIZATION________________").style('font-size', "28px").parent("control");
+  createDiv("____ score and performance metadata _____").parent("control")
+  createDiv("set the key for tonic and fifth highlighting, 0=C - 11=B").parent("control");
+  slider_key = createSlider(0, 11, 0, 1).parent("control");
+  slider_key.changed(checkbox_update_key);
+  checkbox_key = createCheckbox('show key tonic and fifth', false).parent("control");
   checkbox_key.changed(checkbox_update_key);
-  checkbox_pitch = createCheckbox('show pitch', false);
+  checkbox_pitch = createCheckbox('show pitch', false).parent("control");
   checkbox_pitch.changed(checkbox_update);
-  checkbox_system = createCheckbox('show staff lines', true);
+  checkbox_system = createCheckbox('show staff lines', true).parent("control");
   checkbox_system.changed(checkbox_update);
-  checkbox_times = createCheckbox('show seconds in performance', true);
+  checkbox_times = createCheckbox('show seconds in performance', true).parent("control");
   checkbox_times.changed(checkbox_update);
-  checkbox_beat_times = createCheckbox('show beats in score', true);
+  checkbox_beat_times = createCheckbox('show beats in score', true).parent("control");
   checkbox_beat_times.changed(checkbox_update);
-  checkbox_writing = createCheckbox('show performance / score background text', true);
+  checkbox_writing = createCheckbox('show performance / score background text', true).parent("control");
   checkbox_writing.changed(checkbox_update);
-  createDiv("____ alignment lines and expressive features _____")
-  checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check:', true);
+  createDiv("____ alignment lines and expressive features _____").parent("control")
+  checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check:', true).parent("control");
   checkbox_alignment.changed(checkbox_update);
-  checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check:', false);
+  checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check:', false).parent("control");
   checkbox_zalignment.changed(checkbox_update);
-  checkbox_art = createCheckbox('show articulation values in score', false);
+  checkbox_art = createCheckbox('show articulation values in score', false).parent("control");
   checkbox_art.changed(checkbox_update);
-  checkbox_tim = createCheckbox('show timing values in score', false);
+  checkbox_tim = createCheckbox('show timing values in score', false).parent("control");
   checkbox_tim.changed(checkbox_update);
-  checkbox_vel = createCheckbox('show velocity values in score', false);
+  checkbox_vel = createCheckbox('show velocity values in score', false).parent("control");
   checkbox_vel.changed(checkbox_update);
-  createDiv("set the magnification of expressive features in the score");
-  feature_slider = createSlider(0.1, 5, 2, 0.01);
-  feature_slider.changed(note_slider_update);
-  createDiv("____ note visualization _____")
-  createDiv("set the opacity of aligned notes");
-  color_slider = createSlider(0, 255, 160,1);
+  createDiv("set the magnification of expressive features in the score").parent("control");
+  feature_slider = createSlider(0.1, 5, 2, 0.01).parent("control");
+  feature_slider.changed(note_slider_update).parent("control");
+  createDiv("set the opacity of aligned notes").parent("control");
+  color_slider = createSlider(0, 255, 160,1).parent("control");
   color_slider.changed(note_slider_update);
-  createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec");
-  slider_len = createInput("1");
-  piano_roll_draw = createButton('redraw piano rolls');
-  piano_roll_draw.mousePressed(setup_score_and_performance);
+  //createDiv("set the magnification of the performance piano roll: default 1 = 125 pixel / sec").parent("control");
+  //slider_len = createInput("1").parent("control");
+  //piano_roll_draw = createButton('redraw piano rolls').parent("control");
+  //piano_roll_draw.mousePressed(setup_score_and_performance);
 
-  createDiv("_______________TAPPING PARAMETERS________________").style('font-size', "28px")
-  createDiv("PARANGONDA can also annotate your tapping to the score")
-  createDiv('Press "z" to start and stop the playback, press "t" to add an annotation at the current playhead while playing.')
-  createDiv('While no playback is running you can delete the annotations one by one using "r".')
-  createDiv("set the start time of the playback in the performance in seconds:");
-  slider_start_align = createInput("1");
-  slider_start_align.changed(align_slider_update);
-  createDiv("set the first beat to align:");
-  slider_beat_start = createInput("0");
+  createDiv("_BEAT TAPPING________________").style('font-size', "28px").parent("play")
+  createDiv("PARANGONDA can also annotate your tapping to the score").parent("play")
+  createDiv('Press "z" to start and stop the playback, press "t" to add an annotation at the current playhead while playing.').parent("play")
+  createDiv('While no playback is running you can delete the annotations one by one using "r".').parent("play")
+  //createDiv("set the start time of the playback in the performance in seconds:").parent("play");
+  //slider_start_align = 0.0;//createInput("1").parent("play");
+  //slider_start_align.changed(align_slider_update);
+  createDiv("set the first beat to align:").parent("play");
+  slider_beat_start = createInput("0").parent("play");
   slider_beat_start.changed(align_slider_update);
-  createDiv("set the beat interval to align:");
-  slider_beat_interval = createInput("1");
+  createDiv("set the beat interval to align:").parent("play");
+  slider_beat_interval = createInput("1").parent("play");
   slider_beat_interval.changed(align_slider_update);
-  button_export_annotations = createButton('export tapping annotations as csv:');
+  createDiv('export tapping annotations as csv:').parent("play");
+  button_export_annotations = createButton('export tapping annotations').parent("play");
   button_export_annotations.mousePressed(export_annotations);
-  
 }
 
+//________________- Main (Re) Setup-_________________
 
-//________________- Setup The Piano Rolls -__________________________
-
-
-function setup_the_pianorolls(){
-  console.log("setup the pianorolls");
-  // find maximal start and end in performance
-  startmax = min(table.getColumn('onset_sec'));
-  endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
-  durmax = endmax-startmax; 
-  console.log(startmax, endmax, durmax, "PERFORMANCE: startmax, endmax, durmax")
-  startmaxpart = min(tablepart.getColumn('onset_beat'));
-  endmaxpart = max(tablepart.getColumn('onset_beat'))+max(tablepart.getColumn('duration_beat'));
-  durmaxpart = endmaxpart-startmaxpart; 
-  console.log(startmaxpart, endmaxpart, durmaxpart, "SCORE: startmax, endmax, durmax")
-
-  // set pitch of selection in performance
-  pitchmin = min(table.getColumn("pitch"));
-  pitchmax = max(table.getColumn("pitch"));
-  incrementy = floor(300/(pitchmax- pitchmin+1));
-
-  pitchminpart = min(tablepart.getColumn("pitch"));
-  pitchmaxpart = max(tablepart.getColumn("pitch"));
-  incrementypart = floor(300/(pitchmaxpart- pitchminpart+1));
-
-  slider_start_align.elt.value = str(max(0,startmax))
+function setup_score_and_performance() {
+  setup_the_pianorolls(); // size
+  compute_piano_roll_display_elements(); // notes, lines
+  compute_other_display_elements(); // system, key, arrows,
+  click_cleanup(); // reset note state
+  //(); //
 }
-
-//________________- Slider Update -__________________________
-
-
-
-
-
-
 
 //________________- DRAW -__________________________
 
-let starthead = 0;
-let playhead = starthead;
-let start_time=0;
-let pixel_offset_starthead = 0;
-
-let count_offset = 1;
-let playing = false;
-
-let future_notes = [];
-let next_notes = [];
-
-let beat_start = 0.0;
-let beat_interval = 0.5;
-
-let annotation_lines = [];
-let last_beats = 0;
-
-
 function draw() {
   background(255);
-
-
   image(canvaBuffer, canvaBuffer_offsets[0], 0, canvaBuffer.width, canvaBuffer.height);
 
   for(var i = 0; i < arrows.length; i++){
     arrows[i].display();
   }
+
   if (playing) {
     let current_time = Tone.getContext().currentTime;
     //console.log("frame count", frameCount, currentTime);
     if (count_offset == 0) {
       console.log("started")
       start_time = current_time;
-      playhead = 0.0 + starthead;
-      future_notes = notearray.filter(row => (parseFloat(row[1]) >= start))
+      playhead = 0.0 + position.starthead;
+      future_notes = notearray.filter(row => (parseFloat(row[1]) >= playhead-0.1))
     }
     else {
-      playhead = (current_time-start_time)+starthead;
+      playhead = (current_time-start_time)+position.starthead;
     }
   
 
@@ -385,19 +407,33 @@ function draw() {
   }
   count_offset = frameCount;
   // draw playhead
-  let xpos = (playhead-starthead)*(width/widthinit)*125-offsets[0]+canvaBuffer_offsets[0]+pixel_offset_starthead;
+  let xpos = (playhead-position.starthead)*position.pixel_per_sec -
+              position.offset_performance +
+              canvaBuffer_offsets[0] +
+              position.pixel_offset_starthead;
   strokeWeight(2);
   stroke(240,0,0);
-  line(xpos,0,xpos,300);
+  line(xpos,0,xpos,(canvaHeight-100)/2);
   strokeWeight(1);
-  //text(str(Math.floor(playhead)),xpos,30 );
-
+  
+  
   // draw beat alignments
   for (let line in annotation_lines){
     draw_line(annotation_lines[line]);
   }
+
+  // move window with playhead
+  if (xpos > canvaBuffer.width - 200) {
+    position.offset_score += canvaBuffer.width/2;
+    position.offset_performance += canvaBuffer.width/2;
+    canvabuffer_draw();
+    redraw();
+  }
   
 }
+
+
+//________________- TAP -__________________________
 
 // play
 // stop
@@ -408,15 +444,20 @@ function draw() {
 // change start point beat
 // change beat_interval
 function draw_line(line_coordinates) {
-  let xpos_perf = (line_coordinates[0]-start)/dur*width-offsets[0]+canvaBuffer_offsets[0]+pixel_offset_starthead;
-  let xpos_score = (line_coordinates[1]-startpart)/durpart*width-offsets[1]+canvaBuffer_offsets[0];
+  let xpos_perf = (line_coordinates[0]-start)/dur*width-
+                    position.offset_performance
+                    +canvaBuffer_offsets[0]+
+                    position.pixel_offset_starthead;
+  let xpos_score = (line_coordinates[1]-startpart)/durpart*width-
+                    position.offset_score+
+                    canvaBuffer_offsets[0];
   push()
   strokeWeight(2);
   stroke(default_colors.tapping_line);
   fill(0,0,0,100);
-  circle(xpos_perf,150,10);
-  circle(xpos_score,550,10);
-  line(xpos_perf,150,xpos_score,550);
+  circle(xpos_perf,(canvaHeight-100)/4,10);
+  circle(xpos_score,(canvaHeight-100)/4*3+50,10);
+  line(xpos_perf,(canvaHeight-100)/4,xpos_score,(canvaHeight-100)/4*3+50);
   pop()
 }
 
@@ -427,7 +468,7 @@ function add_line() {
 
 function remove_line() {
   annotation_lines.pop();
-  redraw();
+  z();
 }
 
 function start_loop() {
@@ -435,20 +476,17 @@ function start_loop() {
  playing = true;
  loop();
 }
+
 function stop_loop() {
   playing = false;
-  playhead = starthead;
+  playhead = position.starthead;
   noLoop();
+  position.offset_score = position.previous_offset_score;
+  position.offset_performance = position.previous_offset_performance;
+  canvabuffer_draw();
+  redraw();
+  
 }
-
-
-
-
-
-
-
-
-
 
 //___________________canvabuffer draw_______________________________
 
@@ -457,98 +495,105 @@ function canvabuffer_draw() {
   canvaBuffer.background(255);
   canvaBuffer.fill(0);
   canvaBuffer.stroke(0);
-  canvaBuffer.rect(0,300,canvaBuffer.width,100);
+  canvaBuffer.rect(0,(canvaHeight-100)/2,canvaBuffer.width,100);
 
 
-
-    if (checkbox_times.checked()){
-      canvaBuffer.push()
-      
-      canvaBuffer.strokeWeight(1)
-      canvaBuffer.textSize(10);
-      for (let i = 1; i< widthinit/125; i++){    
-        canvaBuffer.stroke(default_colors.timepoints);  
-        canvaBuffer.line((i-start%1)*width/widthinit*125-offsets[0],0,(i-start%1)*width/widthinit*125-offsets[0],300);
-        canvaBuffer.fill(default_colors.timepoints_text);
-        canvaBuffer.stroke(default_colors.timepoints_text);
-        canvaBuffer.text(str(Math.round(i+start-start%1))+" sec", (i-start%1)*width/widthinit*125-offsets[0], 310);
-      }
-      canvaBuffer.pop()
+  //____- Sec Times -_____
+  if (checkbox_times.checked()){
+    canvaBuffer.push()
+    canvaBuffer.strokeWeight(1)
+    canvaBuffer.textSize(10);
+    for (let i = 1; i< widthinit/125; i++){    
+      canvaBuffer.stroke(default_colors.timepoints);  
+      canvaBuffer.line((i-start%1)*position.pixel_per_sec-
+                        position.offset_performance,
+                        0,
+                        (i-start%1)*position.pixel_per_sec-
+                        position.offset_performance,
+                        (canvaHeight-100)/2);
+      canvaBuffer.fill(default_colors.timepoints_text);
+      canvaBuffer.stroke(default_colors.timepoints_text);
+      canvaBuffer.text(str(Math.round(i+start-start%1))+" sec", 
+      (i-start%1)*position.pixel_per_sec-position.offset_performance, (canvaHeight-100)/2+10);
     }
-    if (checkbox_beat_times.checked()){
-      canvaBuffer.push()
-      
-      canvaBuffer.strokeWeight(1)
-      canvaBuffer.textSize(10);
-      for (let i = 0; i< durpart; i++){   
-        canvaBuffer.stroke(default_colors.timepoints);   
-        canvaBuffer.line((i-startpart%1)*width/durpart-offsets[1],400,(i-startpart%1)*width/durpart-offsets[1],700);
-        canvaBuffer.stroke(default_colors.timepoints_text);
-        canvaBuffer.fill(default_colors.timepoints_text);
-        canvaBuffer.text(str(Math.round(i+startpart-startpart%1))+" beats", (i-startpart%1)*width/durpart-offsets[1], 398);
-      }
-      canvaBuffer.pop()
-    }
+    canvaBuffer.pop()
+  }
+  //____- Beat Times -_____
+  if (checkbox_beat_times.checked()){
+    canvaBuffer.push()
     
-
-    if (checkbox_writing.checked()){
-      canvaBuffer.push()
-      canvaBuffer.textSize(300);
-      canvaBuffer.fill(default_colors.background_text);
-      canvaBuffer.stroke(255);
-      canvaBuffer.text('performance', 125, 200);
-      canvaBuffer.text('score', 125, 600);
-      canvaBuffer.pop();
+    canvaBuffer.strokeWeight(1)
+    canvaBuffer.textSize(10);
+    for (let i = 0; i< durpart; i++){   
+      canvaBuffer.stroke(default_colors.timepoints);   
+      canvaBuffer.line((i-startpart%1)*position.pixel_per_beat-
+                        position.offset_score,
+                        (canvaHeight-100)/2+100,
+                        (i-startpart%1)*position.pixel_per_beat-
+                        position.offset_score,
+                        canvaHeight);
+      canvaBuffer.stroke(default_colors.timepoints_text);
+      canvaBuffer.fill(default_colors.timepoints_text);
+      canvaBuffer.text(str(Math.round(i+startpart-startpart%1))+" beats", 
+      (i-startpart%1)*position.pixel_per_beat-position.offset_score, (canvaHeight-100)/2+98);
     }
-    
-    if (checkbox_system.checked()){
-      system_lines.display();
+    canvaBuffer.pop()
+  }
+  //____- Background Text -_____
+  if (checkbox_writing.checked()){
+    canvaBuffer.push()
+    canvaBuffer.textSize(300);
+    canvaBuffer.fill(default_colors.background_text);
+    canvaBuffer.stroke(255);
+    canvaBuffer.text('performance', 125, 300);
+    canvaBuffer.text('score', 125, (canvaHeight-100)/2 +100+300);
+    canvaBuffer.pop();
+  }
+  //____- System Lines -_____  
+  if (checkbox_system.checked()){
+    system_lines.display();
+  }
+  //____- Key Tonic & Dominant -_____
+  if (checkbox_key.checked()){
+    for(var i = 0; i < keyblocks.length; i++){
+      keyblocks[i].display([0,0],false);
     }
-
-    if (checkbox_key.checked()){
-      for(var i = 0; i < keyblocks.length; i++){
-        keyblocks[i].display([0,0],false);
-      }
-    }
-
-
-  for(var i = 0; i < notes.length; i++){
-    notes[i].display(offsets,checkbox_pitch.checked());
   }
 
-
-
+  //____- Notes -_____
+  for(var i = 0; i < notes.length; i++){
+    notes[i].display(position.offsets(),checkbox_pitch.checked());
+  }
+  //____- Expressive Features -_____
   if (checkbox_vel.checked()){
     for(var i = 0; i < notes.length; i++){
-      notes[i].feature_display_vel(offsets);
+      notes[i].feature_display_vel(position.offsets());
     }
   }
   if (checkbox_tim.checked()){
     for(var i = 0; i < notes.length; i++){
-      notes[i].feature_display_tim(offsets);
+      notes[i].feature_display_tim(position.offsets());
     }
   }
   if (checkbox_art.checked()){
     for(var i = 0; i < notes.length; i++){
-      notes[i].feature_display_art(offsets);
+      notes[i].feature_display_art(position.offsets());
     }
   }
+  //____- Alignments -_____
   if (checkbox_alignment.checked()){
     for (var key in lines) {
-    
-    lines[key].display(offsets);
-    
+    lines[key].display(position.offsets());
     }
   }
   if (checkbox_zalignment.checked()){
     for (var key in zlines) {
-    
-    zlines[key].display(offsets);
-    
+    zlines[key].display(position.offsets());
     }
   }
+  //____- Current Line -_____
   if (connect_line) {
-    connect_line.display(offsets);
+    connect_line.display(position.offsets());
   }
 
 }
