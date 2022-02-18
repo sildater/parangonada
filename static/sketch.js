@@ -283,12 +283,24 @@ function setup_controls() {
   createDiv("PARANGONADA visualizes one or two possibly different alignments of a score and a performance. " +
   "The first alignment is colored in light blue and it can be changed using the commands below. " +
   'The second alignment is colored in red (not shown by default, toggle  or press key "2") and can be used as reference. ').parent("info")
-  createDiv("left click on a note to see its alignment").parent("info");
-  createDiv("right click another note to temporarily align them").parent("info");
-  createDiv("middle click to unmark any notes").parent("info");
-  createDiv("press key 'a' or button 'change alignment' to fix the alignment").parent("info");
-  createDiv("press key 's' to delete an alignment").parent("info");
-  createDiv("press button 'save alignment' to download a csv file of note alignments").parent("info");
+  
+  
+  // alignment controls
+  createDiv("ALIGNMENT CONTROLS:").style("font-weight", "bold").parent("info")
+  createDiv("Left click on a note to see its alignment").parent("info");
+  createDiv("Right click another note to temporarily align them").parent("info");
+  createDiv("Middle click to unmark any notes").parent("info");
+  createDiv("Press key 'a' or button 'change alignment' to fix the alignment").parent("info");
+  createDiv("Press key 's' to delete an alignment").parent("info");
+  createDiv("Press button 'save alignment' to download a csv file of note alignments").parent("info");
+
+  // Zoom and shift controls
+  createDiv("ZOOM / SHIFT CONTROLS:").style("font-weight", "bold").parent("info2")
+  createDiv("Use the arrows to the left and right to shift the window").parent("info2");
+  createDiv("Use the mouse wheel while hovering over score, performance, or center to shift the window").parent("info2");
+  createDiv("Use the mouse wheel while pressing 'shift' to zoom towards or from the mouse cursor").parent("info2");
+
+
 
   createDiv("_LEGEND________________").style('font-size', "28px").parent("legend")
   note_one_div = createDiv('no note clicked').parent("legend");
@@ -308,7 +320,7 @@ function setup_controls() {
   slider_key.changed(checkbox_update_key);
   checkbox_key = createCheckbox('show key tonic and fifth', false).parent("control");
   checkbox_key.changed(checkbox_update_key);
-  checkbox_pitch = createCheckbox('show pitch', false).parent("control");
+  checkbox_pitch = createCheckbox('show pitch / note IDs', true).parent("control");
   checkbox_pitch.changed(checkbox_update);
   checkbox_system = createCheckbox('show staff lines', true).parent("control");
   checkbox_system.changed(checkbox_update);
@@ -319,9 +331,9 @@ function setup_controls() {
   checkbox_writing = createCheckbox('show performance / score background text', true).parent("control");
   checkbox_writing.changed(checkbox_update);
   createDiv("____ alignment lines and expressive features _____").parent("control")
-  checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check:', true).parent("control");
+  checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check', true).parent("control");
   checkbox_alignment.changed(checkbox_update);
-  checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check:', false).parent("control");
+  checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check', false).parent("control");
   checkbox_zalignment.changed(checkbox_update);
   checkbox_art = createCheckbox('show articulation values in score', false).parent("control");
   checkbox_art.changed(checkbox_update);
@@ -347,13 +359,14 @@ function setup_controls() {
   //createDiv("set the start time of the playback in the performance in seconds:").parent("play");
   //slider_start_align = 0.0;//createInput("1").parent("play");
   //slider_start_align.changed(align_slider_update);
-  createDiv("set the first beat to align:").parent("play");
+  createDiv('When stopping the playback the playhead will move back to its start position. Change the start position by shifting the performance window left or right.').parent("play");
+  createDiv("Set the first beat to align:").parent("play");
   slider_beat_start = createInput("0").parent("play");
   slider_beat_start.changed(align_slider_update);
-  createDiv("set the beat interval to align:").parent("play");
+  createDiv("Set the beat interval to align:").parent("play");
   slider_beat_interval = createInput("1").parent("play");
   slider_beat_interval.changed(align_slider_update);
-  createDiv('export tapping annotations as csv:').parent("play");
+  createDiv('Export tapping annotations as csv:').parent("play");
   button_export_annotations = createButton('export tapping annotations').parent("play");
   button_export_annotations.mousePressed(export_annotations);
 }
