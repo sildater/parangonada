@@ -94,6 +94,7 @@ for (let i=0; i < Object.keys(sample_map).length; i++)  {
     let url = sample_map[Object.keys(sample_map)[i]];
     new_sample_map[inverse_pitch_spelling(Object.keys(sample_map)[i])] = url.substring(0,url.length-9)+"mp3";
 }
+
 let sampler_kwargs = {
 	urls: new_sample_map,
 	baseUrl: "static/samples/piano/",

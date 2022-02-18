@@ -1,0 +1,49 @@
+#container  {
+padding-right: 0px;
+}
+
+.grid-container {
+    margin-right: 50px;
+    width: auto;
+    display: grid;
+    gap: 20px;
+    grid:  auto / 50% auto;
+    
+
+  }
+
+.grid_elem {
+    border: 5px solid #7a839c;
+    padding: 10px;
+}
+
+#canvas_parent {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+#info_container {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 4;
+}
+#legend {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 2;
+    grid-row-end: 3;
+}
+#control {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 3;
+    grid-row-end: 5;
+}
+#play {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 4;
+    grid-row-end: 5;
+}

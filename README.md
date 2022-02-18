@@ -8,20 +8,24 @@ It's possible to generate this file structure from any kind of alignment encodin
 * [PARTITURA](https://github.com/CPJKU/partitura/tree/master)
 * [BASISMIXER](https://github.com/OFAI/basismixer)
 
-to visualize files in the match file format
+to visualize files in the match file format. Other references:
+* [MATCHMAKER](https://github.com/CPJKU/partitura/tree/master)
+* [MATCH DOCUMENTATION](https://github.com/CPJKU/partitura/tree/master)
 
 ## planned updates:
-* simple python API to generate alignment data files
+
 * match file format reference
-* piano keyboard
-* documented code
-* cleaned DOM interface
 * tutorial video
-* more appealing color palette for notes
-* fix alignment export
-* better piano soundfont
 
 done:
+* playhead for beat tapping follows the window
+* *shift* + mouse wheel to zoom
+* mouse wheel shift of pianorolls
+* more appealing color palette for notes
+* fix alignment export
+* somewhat documented code
+* cleaned DOM interface
+* simple python API to generate alignment data files
 * pitch names toggle
 * black staff lines
 * clefs

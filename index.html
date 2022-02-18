@@ -1,5 +1,6 @@
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script> 
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/addons/p5.sound.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js" integrity="sha512-gwSDP1iEKl4KG0wi3N89RAJU91s78jb/TGC6lsbF5IyR2c19Rn7Jl1icK4K4kUiJNwQUEPI7o98T+GJVWNuvIQ==" crossorigin="anonymous"></script>
@@ -12,9 +13,45 @@
   </head>
   <body oncontextmenu="return false;">
     
-    <main style=" float: left; width: 100%; overflow:hidden; ">
+
+    <div id="container">
+    <div class="grid-container">
+      <div id="canvas_parent" class="grid_elem">
+      <main style="float: left; overflow:hidden; ">
       
-    </main>
+      </main>
+
+      </div>
+    <div id="info_container">
+      <div id="info_top" class="grid_elem">
+        <div id="info_title"></div>
+        <div id="info_buttons">
+          <div id="feature_csv">
+            <div>Upload csv files</div>
+            <input type="file"
+            multiple
+            id="csv_input"
+            name="csv_input" 
+            accept=".csv">
+          </div>
+        </div>
+      <div id="info">
+
+      </div>
+      <div id="info_buttons_alignment"></div>
+      </div>
+      <div id="info2">
+
+      </div>
+    </div>
+
+
+      <div id="legend" class="grid_elem"></div>
+      <div id="play" class="grid_elem"></div>
+      <div id="control" class="grid_elem"></div>
+
+    </div> 
+  </div> 
 
     <!--
     <div id="perf_csv">
@@ -46,14 +83,7 @@
       accept=".csv">
     </div>
     -->
-    <div id="feature_csv">
-      <div>Upload csv files</div>
-      <input type="file"
-      multiple
-      id="csv_input"
-      name="csv_input" 
-      accept=".csv">
-    </div>
+    
     
   </body>
 </html>

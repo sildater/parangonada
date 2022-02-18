@@ -67,7 +67,8 @@ function NoteRectangle(x, y, xl, yl,
   
     this.display = function(offsets, pitch_text) {
 
-        let within_canvas = (this.x+this.xl-offsets[this.offset_id]>= 0) && (this.x-offsets[this.offset_id]< canvaBuffer.width);
+        let within_canvas = (this.x+this.xl-offsets[this.offset_id]>= 0) && 
+        (this.x-offsets[this.offset_id]< canvaBuffer.width);
         if (within_canvas) {
         
         canvaBuffer.push();
@@ -216,7 +217,7 @@ function NoteRectangle(x, y, xl, yl,
       canvaBuffer.push();
       canvaBuffer.stroke(this.col);
       canvaBuffer.strokeWeight(this.wei);
-      canvaBuffer.line(score[this.scorenote].x-offsets[1],score[this.scorenote].y, perf[this.perfnote].x-offsets[0],perf[this.perfnote].y);
+      canvaBuffer.line(score[this.scorenote].x-position.offset_score,score[this.scorenote].y, perf[this.perfnote].x-position.offset_performance,perf[this.perfnote].y);
       canvaBuffer.pop();
     };
   
@@ -240,8 +241,8 @@ function NoteRectangle(x, y, xl, yl,
   
   //____________________________SystemLines Class______________________________________________________________
   
-  function SystemLines (width) {
-    this.width = width;
+  function SystemLines () {
+    this.width = canvaBuffer.width;
     this.wei = 1;
     this.col = default_colors.system_lines;
   
@@ -250,20 +251,20 @@ function NoteRectangle(x, y, xl, yl,
     // E4, G4, B4, D5, F5
     this.trebleclef_notes = [64,67,71,74,77];
     this.all_notes = [43,47,50,53,57,64,67,71,74,77];
-    this.ptreble_clef = [0, 700 -(77+4.4-pitchminpart+0.5)*incrementypart, 10*incrementypart,22.1*incrementypart];
-    this.treble_clef = [0, 300 -(77+4.4-pitchmin+0.5)*incrementy, 10*incrementy,22.1*incrementy];
-    this.pbass_clef = [0, 700 -(57-pitchminpart+0.5)*incrementypart, 8*incrementypart,12*incrementypart];
-    this.bass_clef = [0, 300 -(57-pitchmin+0.5)*incrementy, 8*incrementy,12*incrementy];
+    this.ptreble_clef = [0, (canvaHeight) -(77+4.4-pitchminpart+0.5)*incrementypart, 10*incrementypart,22.1*incrementypart];
+    this.treble_clef = [0, (canvaHeight-100)/2 -(77+4.4-pitchmin+0.5)*incrementy, 10*incrementy,22.1*incrementy];
+    this.pbass_clef = [0, canvaHeight -(57-pitchminpart+0.5)*incrementypart, 8*incrementypart,12*incrementypart];
+    this.bass_clef = [0, (canvaHeight-100)/2 -(57-pitchmin+0.5)*incrementy, 8*incrementy,12*incrementy];
 
 
     this.setup = function () {
-    this.ycoord_plines = this.all_notes.map(x => {return 700 -(x-pitchminpart+0.5)*incrementypart});
-    this.ycoord_lines = this.all_notes.map(x => {return 300 -(x-pitchmin+0.5)*incrementy});
+    this.ycoord_plines = this.all_notes.map(x => {return (canvaHeight) -(x-pitchminpart+0.5)*incrementypart});
+    this.ycoord_lines = this.all_notes.map(x => {return (canvaHeight-100)/2 -(x-pitchmin+0.5)*incrementy});
     for (let i; i<5; i++) {
-      if (this.ycoord_plines[i] > 700 || this.ycoord_plines[i] < 400) {
+      if (this.ycoord_plines[i] > canvaHeight || this.ycoord_plines[i] < (canvaHeight-100)/2+100) {
         delete this.ycoord_plines[i];
       }
-      if (this.ycoord_lines[i] > 300 || this.ycoord_lines[i] < 0) {
+      if (this.ycoord_lines[i] > (canvaHeight-100)/2 || this.ycoord_lines[i] < 0) {
         delete this.ycoord_lines[i];
       }
       
