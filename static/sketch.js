@@ -82,7 +82,7 @@ let polySynth;
 let playhead ;
 let start_time;
 //let pixel_offset_starthead ;
-
+let sampler_loaded = false;
 let count_offset ;
 let playing ;
 
@@ -456,12 +456,13 @@ function draw() {
 // change start point performance
 // change start point beat
 // change beat_interval
+//let xpos_perf = (line_coordinates[0]-start)/position.pixel_per_sec-position.offset_performance+canvaBuffer_offsets[0]+pixel_offset_starthead;
+//let xpos_score = (line_coordinates[1]-startpart)/position.pixel_per_beat-position.offset_score+canvaBuffer_offsets[0];
 function draw_line(line_coordinates) {
-  let xpos_perf = (line_coordinates[0]-start)/dur*width-
-                    position.offset_performance
-                    +canvaBuffer_offsets[0]+
-                    position.pixel_offset_starthead;
-  let xpos_score = (line_coordinates[1]-startpart)/durpart*width-
+  let xpos_perf = (line_coordinates[0]-start)*position.pixel_per_sec -
+                    position.offset_performance +
+                    canvaBuffer_offsets[0];
+  let xpos_score = (line_coordinates[1]-startpart)*position.pixel_per_beat-
                     position.offset_score+
                     canvaBuffer_offsets[0];
   push()
@@ -485,9 +486,11 @@ function remove_line() {
 }
 
 function start_loop() {
+  if (sampler_loaded) {
  count_offset = 0;
  playing = true;
  loop();
+  }
 }
 
 function stop_loop() {

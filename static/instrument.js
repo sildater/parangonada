@@ -99,6 +99,7 @@ let sampler_kwargs = {
 	urls: new_sample_map,
 	baseUrl: "static/samples/piano/",
 	onload: () => {
+        sampler_loaded = true;
         console.log("loaded sampler")
 	}
 };
