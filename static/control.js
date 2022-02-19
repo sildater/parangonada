@@ -72,7 +72,7 @@ function checknoteclicked() {
             notes[i].right_rebase();
           }
           for(var i = 0; i < notes.length; i++){
-            notes[i].right_clicked(offsets);
+            notes[i].right_clicked(position.offsets());
           } 
         }
         if (mouseButton === CENTER) {
