@@ -278,7 +278,7 @@ function setup_controls() {
   button_upload = createButton('visualise uploaded files').parent("info_buttons");
   button_upload.mousePressed(redraw_with_new_files);
 
-  createDiv("_PARANGONDA________________").style('font-size', "28px").parent("info_title")
+  createDiv("_PARANGONDA_").style('font-size', "28px").parent("info_title")
   //createDiv("PARANGONADA").style('font-size', "28px").parent("info")
   createDiv("PARANGONADA visualizes one or two possibly different alignments of a score and a performance. " +
   "The first alignment is colored in light blue and it can be changed using the commands below. " +
@@ -286,7 +286,7 @@ function setup_controls() {
   
   
   // alignment controls
-  createDiv("ALIGNMENT CONTROLS:").style("font-weight", "bold").parent("info")
+  createDiv("ALIGNMENT CONTROLS:").style("font-weight", "bold").style("padding-top", "7px").parent("info")
   createDiv("Left click on a note to see its alignment").parent("info");
   createDiv("Right click another note to temporarily align them").parent("info");
   createDiv("Middle click to unmark any notes").parent("info");
@@ -295,14 +295,14 @@ function setup_controls() {
   createDiv("Press button 'save alignment' to download a csv file of note alignments").parent("info");
 
   // Zoom and shift controls
-  createDiv("ZOOM / SHIFT CONTROLS:").style("font-weight", "bold").parent("info2")
+  createDiv("ZOOM / SHIFT CONTROLS:").style("font-weight", "bold").style("padding-top", "7px").parent("info2")
   createDiv("Use the arrows to the left and right to shift the window").parent("info2");
   createDiv("Use the mouse wheel while hovering over score, performance, or center to shift the window").parent("info2");
   createDiv("Use the mouse wheel while pressing 'shift' to zoom towards or from the mouse cursor").parent("info2");
 
 
 
-  createDiv("_LEGEND________________").style('font-size', "28px").parent("legend")
+  createDiv("_LEGEND_").style('font-size', "28px").parent("legend")
   note_one_div = createDiv('no note clicked').parent("legend");
   note_two_div = createDiv('no note right clicked').parent("legend");
   createDiv("the note colors whether a note is aligned and whether the first and second alignment agree: ").parent("legend")
@@ -313,8 +313,9 @@ function setup_controls() {
   createDiv("matched notes in the second (reference) alignment, non-aligned in the first. ").style('color',default_colors.match2indel1).parent("legend"); 
   
 
-  createDiv("_VISUALIZATION________________").style('font-size', "28px").parent("control");
-  createDiv("____ score and performance metadata _____").parent("control")
+  createDiv("_VISUALIZATION_").style('font-size', "28px").parent("control");
+  createDiv("SCORE / PERFORMANCE METADATA:").style("font-weight", "bold").style("padding-top", "7px").parent("control")
+  //createDiv("____ score and performance metadata _____").parent("control")
   createDiv("set the key for tonic and fifth highlighting, 0=C - 11=B").parent("control");
   slider_key = createSlider(0, 11, 0, 1).parent("control");
   slider_key.changed(checkbox_update_key);
@@ -330,7 +331,8 @@ function setup_controls() {
   checkbox_beat_times.changed(checkbox_update);
   checkbox_writing = createCheckbox('show performance / score background text', true).parent("control");
   checkbox_writing.changed(checkbox_update);
-  createDiv("____ alignment lines and expressive features _____").parent("control")
+  createDiv("ALIGNMENT LINES AND EXPRESSIVE FEATURES:").style("font-weight", "bold").style("padding-top", "7px").parent("control")
+  //createDiv("____ alignment lines and expressive features _____").parent("control")
   checkbox_alignment = createCheckbox('show alignment lines, press key "1" or check', true).parent("control");
   checkbox_alignment.changed(checkbox_update);
   checkbox_zalignment = createCheckbox('show second alignment lines, press key "2" or check', false).parent("control");
@@ -352,7 +354,7 @@ function setup_controls() {
   //piano_roll_draw = createButton('redraw piano rolls').parent("control");
   //piano_roll_draw.mousePressed(setup_score_and_performance);
 
-  createDiv("_BEAT TAPPING________________").style('font-size', "28px").parent("play")
+  createDiv("_BEAT TAPPING_").style('font-size', "28px").parent("play")
   createDiv("PARANGONDA can also annotate your tapping to the score").parent("play")
   createDiv('Press "z" to start and stop the playback, press "t" to add an annotation at the current playhead while playing.').parent("play")
   createDiv('While no playback is running you can delete the annotations one by one using "r".').parent("play")
