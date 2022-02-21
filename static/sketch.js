@@ -484,7 +484,7 @@ function add_line() {
 
 function remove_line() {
   annotation_lines.pop();
-  z();
+  click_cleanup();
 }
 
 function start_loop() {
