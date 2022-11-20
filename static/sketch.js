@@ -162,7 +162,7 @@ function setup() {
   window.onresize = setup_score_and_performance;
   //offsets = [-100,-100];
   canvaBuffer_offsets = [50,50,100];
-  canvaHeight = 1100;
+  canvaHeight = max(900,windowHeight-200);
   position = {
     offset_score: -100,
     offset_performance: -100,
@@ -297,8 +297,8 @@ function setup_controls() {
   // Zoom and shift controls
   createDiv("ZOOM / SHIFT CONTROLS:").style("font-weight", "bold").style("padding-top", "7px").parent("info2")
   createDiv("Use the arrows to the left and right to shift the window").parent("info2");
-  createDiv("Use the mouse wheel while hovering over score, performance, or center to shift the window").parent("info2");
-  createDiv("Use the mouse wheel while pressing 'shift' to zoom towards or from the mouse cursor").parent("info2");
+  createDiv("Use the mouse wheel while pressing 'shift' over score, performance, or center to shift the window").parent("info2");
+  createDiv("Use the mouse wheel while pressing 'ctrl' to zoom towards or from the mouse cursor").parent("info2");
 
 
 

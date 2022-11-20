@@ -139,14 +139,15 @@ function mouseWheel(event) {
       mouseX < canva.width-canvaBuffer_offsets[1] &&
       mouseY < (canvaHeight)){
 
-    event.preventDefault()
-
+    console.log(event)
     // -- zoom ---
-    if (event.shiftKey) {
+    if (event.ctrlKey) {
+      event.preventDefault()
+
       let mouse_from_left = mouseX - canvaBuffer_offsets[0];
       let current_pixel_per_sec = position.pixel_per_sec;
       let current_pixel_offset = position.offset_performance;
-      position.pixel_per_sec += event.delta;
+      position.pixel_per_sec += event.delta/2040*position.pixel_per_sec; // change by 10 percent
       position.pixel_per_sec = min(max(position.pixel_per_sec, 5), 5000)
       position.offset_performance = (mouse_from_left + current_pixel_offset)*
                                     (position.pixel_per_sec/current_pixel_per_sec)
@@ -163,7 +164,9 @@ function mouseWheel(event) {
       position.previous_offset_score = position.offset_score 
       setup_score_and_performance()
       
-    } else {
+    } else if (event.shiftKey) {
+      event.preventDefault()
+
       // shift
       let y = mouseY;
       let d = event.delta;
