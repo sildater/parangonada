@@ -127,12 +127,12 @@ img.updatePixels();
 //________________- upload files -__________________________
 
 function redraw_with_new_files() {
-  console.log("get here before loading");
+  //console.log("get here before loading");
 
   let file_names = {"align.csv":0, "feature.csv":1, "part.csv":2, "ppart.csv":3, "zalign.csv":4};
   for (let i = 0; i< document.getElementById('csv_input').files.length; i++) {
     file_names[document.getElementById('csv_input').files[i].name] = i;
-    console.log(document.getElementById('csv_input').files[i].name, i);
+    //console.log(document.getElementById('csv_input').files[i].name, i);
   }
   Promise.allSettled([
     new Promise((res) => {loadTable(URL.createObjectURL(document.getElementById('csv_input').files[0]), 'csv', 'header', callback = res)}),
@@ -148,7 +148,10 @@ function redraw_with_new_files() {
       zalignment = values[file_names["zalign.csv"]]["value"];
       feature = values[file_names["feature.csv"]]["value"];
       console.log("starting the drawing now!", values); 
+      reset_position();
+      reset_player();
       setup_score_and_performance();
+      align_slider_update();
     })
   .catch(errors => {err = errors; alert("error loading one of the uploaded files");})
 
@@ -163,55 +166,9 @@ function setup() {
   //offsets = [-100,-100];
   canvaBuffer_offsets = [50,50,100];
   canvaHeight = max(900,windowHeight-200);
-  position = {
-    offset_score: -100,
-    offset_performance: -100,
-    previous_offset_score: -100,
-    previous_offset_performance: -100,
-    pixel_per_sec: 125,
-    pixel_per_beat: 125,
-    starthead: 0,
-    pixel_offset_starthead: 0,
-    move_starthead_with_performance: true,
-    offsets: function() {
-      return [this.offset_performance, this.offset_score]
-    },
-    increment: function(inc, score, perf, prev, starth) {
-      if (score && prev) {
-        this.offset_score += inc;
-        this.previous_offset_score += inc;
-      } else if (score && !prev) {
-        this.offset_score += inc;
-      }
-      if (perf && prev) {  
-        this.offset_performance += inc;
-        this.previous_offset_performance += inc;
-      } else if (perf && !prev) {
-        this.offset_performance += inc;
-      }
-      if ((starth) || (this.move_starthead_with_performance && perf)) {
-        this.starthead += inc/this.pixel_per_sec;
-        print(inc, (this.starthead-start))
-        this.pixel_offset_starthead = (this.starthead-start)*this.pixel_per_sec;
-        print(this.pixel_offset_starthead)
-        playhead = this.starthead;
-      }
-    }
-  }
-  
+  reset_position();
+  reset_player();  
 
-  //player variable values
-  playhead = 0;
-  start_time=0;
-  //pixel_offset_starthead = 0;
-  count_offset = 1;
-  playing = false;
-  future_notes = [];
-  next_notes = [];
-  beat_start = 0.0;
-  beat_interval = 0.5;
-  annotation_lines = [];
-  last_beats = 0;
   polySynth = new Tone.Sampler(sampler_kwargs).toDestination();
   //polySynth.setADSR(0.05,0.05,1.0, 0.05);
 
@@ -254,6 +211,8 @@ function setup() {
                     tapping_line:color(240,240,0)
   };
 
+
+
   alpha_clefs(treble_clef);
   alpha_clefs(bass_clef);
   setup_controls();
@@ -263,6 +222,60 @@ function setup() {
   //__________________________________________________________________________________________
   frameRate(30);
   noLoop();
+}
+
+
+function reset_position() {
+  position = {
+    offset_score: -100,
+    offset_performance: -100,
+    previous_offset_score: -100,
+    previous_offset_performance: -100,
+    pixel_per_sec: 125,
+    pixel_per_beat: 125,
+    starthead: 0,
+    pixel_offset_starthead: 0,
+    move_starthead_with_performance: true,
+    offsets: function() {
+      return [this.offset_performance, this.offset_score]
+    },
+    increment: function(inc, score, perf, prev, starth) {
+      if (score && prev) {
+        this.offset_score += inc;
+        this.previous_offset_score += inc;
+      } else if (score && !prev) {
+        this.offset_score += inc;
+      }
+      if (perf && prev) {  
+        this.offset_performance += inc;
+        this.previous_offset_performance += inc;
+      } else if (perf && !prev) {
+        this.offset_performance += inc;
+      }
+      if ((starth) || (this.move_starthead_with_performance && perf)) {
+        this.starthead += inc/this.pixel_per_sec;
+        //print(inc, (this.starthead-start))
+        this.pixel_offset_starthead = (this.starthead-start)*this.pixel_per_sec;
+        //print(this.pixel_offset_starthead)
+        playhead = this.starthead;
+      }
+    }
+  }
+}
+
+function reset_player() {
+    //player variable values
+    playhead = 0;
+    start_time = 0;
+    //pixel_offset_starthead = 0;
+    count_offset = 1;
+    playing = false;
+    future_notes = [];
+    next_notes = [];
+    beat_start = 0.0;
+    beat_interval = 0.5;
+    annotation_lines = [];
+    last_beats = 0;
 }
 
 //________________- Setup the text and controls -__________________________

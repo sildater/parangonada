@@ -17,11 +17,11 @@ function keyTyped() {
     } 
     if (key === 'z') {
       if (playing){
-        console.log("stop", playing)
+        //console.log("stop", playing)
         stop_loop();
       }
       else {
-      console.log("start", playing)
+      //console.log("start", playing)
       start_loop();
       }
     }
@@ -139,7 +139,7 @@ function mouseWheel(event) {
       mouseX < canva.width-canvaBuffer_offsets[1] &&
       mouseY < (canvaHeight)){
 
-    console.log(event)
+    //console.log(event)
     // -- zoom ---
     if (event.ctrlKey) {
       event.preventDefault()
@@ -162,7 +162,7 @@ function mouseWheel(event) {
                                     (position.pixel_per_sec/current_pixel_per_sec)
                                     - mouse_from_left;
       position.previous_offset_score = position.offset_score 
-      setup_score_and_performance()
+      setup_score_and_performance();
       
     } else if (event.shiftKey) {
       event.preventDefault()
@@ -284,9 +284,9 @@ function change_alignment() {
   
   if (perf_nomore != "" && score_nomore != "") {
     // reset former perf note in alignment
-    console.log("perf nomore in realigment", perf_nomore)
+    //console.log("perf nomore in realigment", perf_nomore)
     let row = alignment.findRow(perf_nomore, "ppartid");
-    console.log(row)
+    //console.log(row)
     row.setString("partid", "undefined");
     row.setString("matchtype", "2");
     // reset the note
@@ -295,9 +295,9 @@ function change_alignment() {
     delete lines[score_still+perf_nomore] ;
 
     // reset former score note in alignment
-    console.log("scoreno")
+    //console.log("scoreno")
     let rowp = alignment.findRow(score_nomore, "partid");
-    console.log(rowp)
+    //console.log(rowp)
     rowp.setString("ppartid", "undefined");
     rowp.setString("matchtype", "1");
     // reset the note
@@ -317,9 +317,9 @@ function change_alignment() {
   } else if (perf_nomore != "" && score_nomore == "") {
 
     // reset former perf note in alignment
-    console.log("perf nomore in realigment", perf_nomore)
+    //console.log("perf nomore in realigment", perf_nomore)
     let row = alignment.findRow(perf_nomore, "ppartid");
-    console.log(row)
+    //console.log(row)
     row.setString("partid", "undefined");
     row.setString("matchtype", "2");
     // reset the note
@@ -354,9 +354,9 @@ function change_alignment() {
   } else if (perf_nomore == "" && score_nomore != ""){
 
     // reset former score note in alignment
-    console.log("scoreno")
+    //console.log("scoreno")
     let rowp = alignment.findRow(score_nomore, "partid");
-    console.log(rowp)
+    //console.log(rowp)
     rowp.setString("ppartid", "undefined");
     rowp.setString("matchtype", "1");
     // reset the note

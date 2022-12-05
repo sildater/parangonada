@@ -8,7 +8,7 @@ function compute_global_sizing() {
   width = dur*position.pixel_per_sec;
   position.pixel_per_beat = width/durpart;
   // (re)size of canvases
-  console.log("(FULL WIDTH) width, start, end, dur", width, start, end, dur);
+  //console.log("(FULL WIDTH) width, start, end, dur", width, start, end, dur);
   resizeCanvas(windowWidth-70,canvaHeight);
   canvaBuffer.resizeCanvas(windowWidth-70-canvaBuffer_offsets[2], canvaHeight);
 }
@@ -22,11 +22,11 @@ function setup_the_pianorolls(){
   startmax = min(table.getColumn('onset_sec'));
   endmax = max(table.getColumn('onset_sec'))+max(table.getColumn('duration_sec'));
   durmax = endmax-startmax; 
-  console.log(startmax, endmax, durmax, "PERFORMANCE: startmax, endmax, durmax")
+  //console.log(startmax, endmax, durmax, "PERFORMANCE: startmax, endmax, durmax")
   startmaxpart = min(tablepart.getColumn('onset_beat'));
   endmaxpart = max(tablepart.getColumn('onset_beat'))+max(tablepart.getColumn('duration_beat'));
   durmaxpart = endmaxpart-startmaxpart; 
-  console.log(startmaxpart, endmaxpart, durmaxpart, "SCORE: startmax, endmax, durmax")
+  //console.log(startmaxpart, endmaxpart, durmaxpart, "SCORE: startmax, endmax, durmax")
 
   // set pitch of selection in performance
   pitchmin = min(min(table.getColumn("pitch"))-1,36);
@@ -45,7 +45,7 @@ function setup_the_pianorolls(){
   endpart = endmaxpart;
   durpart= durmaxpart;
 
-  compute_global_sizing()
+  compute_global_sizing();
 }
 
 //________________- Setup The Piano Roll Elements -__________________________
@@ -54,21 +54,21 @@ function compute_piano_roll_display_elements() {
 
     
         // compute notearrays and match array within the given (start-end)
-        console.log("computing performance notes within limits");
+        //console.log("computing performance notes within limits");
         notearray= onset_offset_in_limits (table, start, end);
         lastonset= notearray[notearray.length-1][1]-start;
-        console.log("computing matches within limits");
+        //console.log("computing matches within limits");
         matchl = alignment_ids(notearray, alignment, tablepart, false);
-        console.log("computing secondary matches within limits");
+        //console.log("computing secondary matches within limits");
         zmatchl = alignment_ids(notearray, zalignment, tablepart, false);
-        console.log("computing score notes within limits");
+        //console.log("computing score notes within limits");
         notearraypart= onset_offset_in_limits_p (tablepart, startpart, endpart);
 
       notes = [];
       perf = {};
       score = {};
       
-      console.log("creating Note Rectangles for performance");
+      //console.log("creating Note Rectangles for performance");
       // generate new NoteRectangles for the performance
       for (let r = 0; r < notearray.length; r++){
         let xx = (notearray[r][1]-start)/dur*width;
@@ -79,7 +79,7 @@ function compute_piano_roll_display_elements() {
         perf[notearray[r][3]] = new NoteRectangle(xx,yy,xe,ye, notearray[r][3], "perf", notearray[r][2]);
         notes.push(perf[notearray[r][3]]);    
       }
-      console.log("creating Note Rectangles for score");
+      //console.log("creating Note Rectangles for score");
       // generate new NoteRectangles for the score
       for (let r = 0; r < notearraypart.length; r++){
         let xxp = (notearraypart[r][1]-startpart)/durpart*width;
@@ -92,14 +92,14 @@ function compute_piano_roll_display_elements() {
 
 
         // generate lines
-        console.log("creating Match lines ");
+        //console.log("creating Match lines ");
         lines_from_matchl();
-        console.log("creating Match lines original");
+        //console.log("creating Match lines original");
         zlines_from_zmatchl();
 
           //__________________________________________________________________________________________
     // add articulation to score notes
-    console.log("creating performance features");
+    //console.log("creating performance features");
     for (let r = 0; r < feature.getRowCount(); r++){
     if (feature.getColumn("id")[r] in score) {
         
@@ -282,7 +282,7 @@ function generate_arrows() {
 
 //________________- Initialize all other display elements -__________________________
 function compute_other_display_elements(){
-    console.log("computing display elements: system, key blocks, arrow");
+    //console.log("computing display elements: system, key blocks, arrow");
     // generate staff lines
     system_lines = new SystemLines (windowWidth);
     // gemerate arrows
