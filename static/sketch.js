@@ -291,7 +291,7 @@ function setup_controls() {
   button_upload = createButton('visualise uploaded files').parent("info_buttons");
   button_upload.mousePressed(redraw_with_new_files);
 
-  createDiv("_PARANGONDA_").style('font-size', "28px").parent("info_title")
+  createDiv("_PARANGONADA_").style('font-size', "28px").parent("info_title")
   //createDiv("PARANGONADA").style('font-size', "28px").parent("info")
   createDiv("PARANGONADA visualizes one or two possibly different alignments of a score and a performance. " +
   "The first alignment is colored in light blue and it can be changed using the commands below. " +
