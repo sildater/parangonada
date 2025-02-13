@@ -250,8 +250,49 @@ function export_annotations() {
   annotations = loadTable("static/annotations.csv", 'csv', 'header');
 }
 
-
 function change_alignment() {
+  let x = document.getElementById("many_alignments").checked ? "True" : "False";
+  if (x === "True") {
+    change_alignment_many();
+  }
+  else {
+    change_alignment_one();
+  }
+}
+
+function change_alignment_many() {  
+  if (clicked_note && right_clicked_note) {
+    let perf_still, score_still;
+
+    if (clicked_note.type == "perf") {
+      perf_still = clicked_note.name;
+      score_still = right_clicked_note.name;
+    } else {
+      perf_still = right_clicked_note.name;
+      score_still = clicked_note.name;
+    }
+
+    // Link the notes
+    score[score_still].link(perf_still);
+    perf[perf_still].link(score_still);
+    let line_key = `${score_still}_${perf_still}`;
+    lines[line_key] = new NoteLine(score[score_still].x, score[score_still].y,
+                                   perf[perf_still].x, perf[perf_still].y, perf_still, score_still, false);
+
+    // Add new alignment to the table
+    let newRow = alignment.addRow();
+    newRow.setString('ppartid', perf_still);
+    newRow.setString('partid', score_still);
+    newRow.setString('matchtype', '0');
+    newRow.setString('idx', (alignment.rows.length - 1).toString());
+
+    click_cleanup();
+  } else {
+    alert("mark two notes for alignment...");
+  }
+}
+
+function change_alignment_one() {
   if (clicked_note && right_clicked_note){
 
   
