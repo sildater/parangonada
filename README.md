@@ -46,7 +46,9 @@ done:
 2025
 * improved csv export for heavily edited files
 * erasing all alignments for a fresh start
-* experimental many-to-many alignment (thank you QC-Suhit)
+* experimental many-to-many alignment (thank you @C-Suhit !)
+
+  
 OLDER
 * playhead for beat tapping follows the window
 * *shift* + mouse wheel to zoom
