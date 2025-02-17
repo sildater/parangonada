@@ -33,7 +33,7 @@ function keyTyped() {
       else {
         checkbox_alignment.checked(true);
       }
-      canvabuffer_draw()
+      canvabuffer_draw();
       redraw();
     } 
     if (key === '2') {
@@ -250,12 +250,44 @@ function export_annotations() {
   annotations = loadTable("static/annotations.csv", 'csv', 'header');
 }
 
-
 function change_alignment() {
-  if (clicked_note && right_clicked_note){
+  if (checkbox_many2many.checked()) {
+    change_alignment_many();
+  }
+  else {
+    change_alignment_one();
+  }
+}
 
-  
-  //let new_idx = input_idx.input();
+function change_alignment_many() {  
+  if (clicked_note && right_clicked_note) {
+    let perf_still, score_still;
+
+    if (clicked_note.type == "perf") {
+      perf_still = clicked_note.name;
+      score_still = right_clicked_note.name;
+    } else {
+      perf_still = right_clicked_note.name;
+      score_still = clicked_note.name;
+    }
+
+    // Link the notes
+    score[score_still].link(perf_still);
+    perf[perf_still].link(score_still);
+    let line_key = `${score_still}_${perf_still}`;
+    lines[line_key] = new NoteLine(score[score_still].x, score[score_still].y,
+                                   perf[perf_still].x, perf[perf_still].y, perf_still, score_still, false);
+
+    // Add new alignment to the table
+    customAddRowAlignment(perf_still, score_still, "0");
+    click_cleanup();
+  } else {
+    alert("mark two notes for alignment...");
+  }
+}
+
+function change_alignment_one() {
+  if (clicked_note && right_clicked_note){
   let perf_still;
   let score_nomore;
   let score_still;
@@ -279,126 +311,80 @@ function change_alignment() {
   perf[perf_still].reset();
   score[score_still].link(perf_still);
   perf[perf_still].link(score_still);
-  lines[score_still+perf_still] = new NoteLine(score[score_still].x,score[score_still].y,
+  let line_key_ssps = `${score_still}_${perf_still}`;
+  lines[line_key_ssps] = new NoteLine(score[score_still].x,score[score_still].y,
                                               perf[perf_still].x,perf[perf_still].y, perf_still, score_still, false);
   
-  if (perf_nomore != "" && score_nomore != "") {
-    // reset former perf note in alignment
-    //console.log("perf nomore in realigment", perf_nomore)
-    let row = alignment.findRow(perf_nomore, "ppartid");
-    //console.log(row)
-    row.setString("partid", "undefined");
-    row.setString("matchtype", "2");
+  customRemoveRow(perf_still, "ppartid",alignment);
+  customRemoveRow(score_still, "partid",alignment);
+  customAddRowAlignment(perf_still, score_still, "0");
+  if (perf_nomore != "") {
     // reset the note
     perf[perf_nomore].reset();
     // delete the line
-    delete lines[score_still+perf_nomore] ;
-
-    // reset former score note in alignment
-    //console.log("scoreno")
-    let rowp = alignment.findRow(score_nomore, "partid");
-    //console.log(rowp)
-    rowp.setString("ppartid", "undefined");
-    rowp.setString("matchtype", "1");
+    let line_key_sspn = `${score_still}_${perf_nomore}`;
+    delete lines[line_key_sspn] ;
+    // add insertion
+    customAddRowAlignment(perf_nomore, "undefined", "2");
+  } else if (score_nomore != ""){
     // reset the note
     score[score_nomore].reset();
     // delete the line
-    delete lines[score_nomore+perf_still] ;
-
-    // add new alignment  to table
-    let newRow = alignment.addRow();
-    newRow.setString('ppartid',perf_still);
-    newRow.setString('partid', score_still);
-    newRow.setString('matchtype', '0');
-    newRow.setString('idx', (alignment.rows.length-1).toString());
-
-
-
-  } else if (perf_nomore != "" && score_nomore == "") {
-
-    // reset former perf note in alignment
-    //console.log("perf nomore in realigment", perf_nomore)
-    let row = alignment.findRow(perf_nomore, "ppartid");
-    //console.log(row)
-    row.setString("partid", "undefined");
-    row.setString("matchtype", "2");
-    // reset the note
-    perf[perf_nomore].reset();
-    // delete the line
-    delete lines[score_still+perf_nomore] ;
-
-
-    // newly align former unaligned perf note
-    let rowp = alignment.findRow(perf_still, "ppartid");
-    rowp.setString("partid", score_still);
-    rowp.setString("matchtype","0");
-
-    // // reset former score note in alignment
-    // console.log("scoreno")
-    // let rowp = alignment.findRow(score_nomore, "partid");
-    // console.log(rowp)
-    // rowp.setString("ppartid", "undefined");
-    // rowp.setString("matchtype", "1");
-    // // reset the note
-    // score[score_nomore].reset();
-    // // delete the line
-    // delete lines[score_nomore+perf_still] ;
-
-    // // add new alignment  to table
-    // let newRow = alignment.addRow();
-    // newRow.setString('ppartid',perf_still);
-    // newRow.setString('partid', score_still);
-    // newRow.setString('matchtype', '0');
-    // newRow.setString('idx', (alignment.rows.length-1).toString());
-
-  } else if (perf_nomore == "" && score_nomore != ""){
-
-    // reset former score note in alignment
-    //console.log("scoreno")
-    let rowp = alignment.findRow(score_nomore, "partid");
-    //console.log(rowp)
-    rowp.setString("ppartid", "undefined");
-    rowp.setString("matchtype", "1");
-    // reset the note
-    score[score_nomore].reset();
-    // delete the line
-    delete lines[score_nomore+perf_still] ;
-
-
-    // newly align former unaligned score note
-    let row = alignment.findRow(score_still, "partid");
-    row.setString("ppartid", perf_still);
-    row.setString("matchtype","0");
-
-
-  } else if (perf_nomore == "" && score_nomore == ""){
-
-    // set former unaligned perf note line to None
-    let row2 = alignment.findRow(perf_still, "ppartid");
-    row2.setString("partid", "None");
-    row2.setString("matchtype","None");
-    row2.setString("ppartid","None");
-
-    // newly align former unaligned score note
-    let row = alignment.findRow(score_still, "partid");
-    row.setString("ppartid", perf_still);
-    row.setString("matchtype","0");
-
-
-  }
-  
-
-  
+    let line_key_snps = `${score_nomore}_${perf_still}`;
+    delete lines[line_key_snps] ;
+    // add deletion
+    customAddRowAlignment("undefined", score_nomore, "1");
+  } 
   click_cleanup();
-  // update match lines
-  //matchl = alignment_ids(notearray, alignment, tablepart);
-
-
 }
 else {
-  alert("mark two notes for alignment...");
+  alert("mark two notes for alignment.");
 }
-  
+}
+
+function customFindRow (value, column, table) {
+  // try the Object 
+  for (let i = 0; i < table.rows.length; i++) {
+    if (table.rows[i].obj[column] === value) {
+      return [table.rows[i], i];
+    }
+  }
+}
+
+function customAddRowAlignment (ppid, pid, mt){
+  console.log(ppid, pid, mt);
+  const newRow = alignment.addRow();
+  newRow.setString('ppartid',ppid);
+  newRow.setString('partid', pid);
+  newRow.setString('matchtype', mt);
+  let last_line_idx  = -1;
+  if (alignment.rows.length > 1) {
+    last_line_idx  = parseInt(alignment.get(alignment.rows.length-2, "idx"));
+  } 
+  console.log(last_line_idx);
+  newRow.setString('idx', (last_line_idx + 1).toString());
+}
+
+function customRemoveRow (value, column, table){
+  const rowvalues = customFindRow(value, column, table)
+  if (typeof rowvalues != "undefined" ){
+    const row2idx = rowvalues[1]
+    table.removeRow(row2idx);
+  }
+}
+
+function erase_alignment() {
+  alignment.clearRows();
+  lines = {};
+  zlines = {};
+  for(var i = 0; i < notes.length; i++){
+    notes[i].reset();
+    notes[i].rebase();
+    notes[i].right_rebase();
+  }
+  canvabuffer_draw();
+  redraw();
+
 }
 
 function delete_alignment() {
@@ -437,24 +423,18 @@ function delete_alignment() {
             score_nomore =  clicked_note_neutral.name;
             perf_nomore =  clicked_note_neutral.linked_note;
         }
-        
-          let newRow = alignment.addRow();
-          newRow.setString('ppartid',"undefined");
-          newRow.setString('partid', score_nomore);
-          newRow.setString('matchtype', '1');
-          newRow.setString('idx', (alignment.rows.length-1).toString());
-          // table
-
-          let row = alignment.findRow(perf_nomore, "ppartid");
-          row.setString("partid", "undefined");
-          row.setString("matchtype","2");
-
-
+          // remove row
+          customRemoveRow(perf_nomore,"ppartid",alignment);
           // reset the notes
-          perf[perf_nomore].reset();
           score[score_nomore].reset();
+          perf[perf_nomore].reset();
           // delete the line
-          delete lines[score_nomore+perf_nomore] ;
+          let line_key_snpn = `${score_nomore}_${perf_nomore}`;
+          delete lines[line_key_snpn] ;
+          // add deletion
+          customAddRowAlignment("undefined", score_nomore, "1");
+          // add insertion
+          customAddRowAlignment(perf_nomore, "undefined", "2");
         
 
         click_cleanup();

@@ -171,6 +171,7 @@ function lines_from_matchl () {
   let partid;
   let partnote;
   let ppartnote;
+  let line_key;
   for (let r = 0; r < matchl.length; r++){
     ppartid =  matchl[r][0];
     partid =  matchl[r][1];
@@ -179,7 +180,8 @@ function lines_from_matchl () {
     //print(partnote, partid,  ppartnote, ppartid)
     partnote.link(ppartid); 
     ppartnote.link(partid);
-    lines[partid+ppartid] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, false);
+    line_key = `${partid}_${ppartid}`;
+    lines[line_key] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, false);
   };
 
 }
@@ -191,6 +193,7 @@ function zlines_from_zmatchl () {
   let partid;
   let partnote;
   let ppartnote;
+  let line_key;
   for (let r = 0; r < zmatchl.length; r++){
     ppartid =  zmatchl[r][0];
     partid =  zmatchl[r][1];
@@ -200,7 +203,8 @@ function zlines_from_zmatchl () {
       //print(partnote, partid,  ppartnote, ppartid)
       partnote.zlink(ppartid); 
       ppartnote.zlink(partid);
-      zlines[partid+ppartid] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, true);
+      line_key = `${partid}_${ppartid}`;
+      zlines[line_key] = new NoteLine(partnote.x,partnote.y,ppartnote.x,ppartnote.y, ppartid, partid, true);
     }
   };
   
