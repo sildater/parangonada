@@ -286,7 +286,7 @@ function setup_controls() {
   button_change.mousePressed(change_alignment)
   button_save = createButton('save alignment').parent("info_buttons_alignment");
   button_save.mousePressed(save_alignment);
-  checkbox_many2many = createCheckbox('enable many-to-many alignment', false).parent("info_buttons_alignment");
+  checkbox_many2many = createCheckbox('enable many-to-many alignment (experimental, no deletion)', false).parent("info_buttons_alignment");
   button_erase = createButton('erase alignment (no undo)').parent("info_buttons_alignment");
   button_erase.mousePressed(erase_alignment);
 

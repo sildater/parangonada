@@ -279,12 +279,7 @@ function change_alignment_many() {
                                    perf[perf_still].x, perf[perf_still].y, perf_still, score_still, false);
 
     // Add new alignment to the table
-    let newRow = alignment.addRow();
-    newRow.setString('ppartid', perf_still);
-    newRow.setString('partid', score_still);
-    newRow.setString('matchtype', '0');
-    newRow.setString('idx', (alignment.rows.length - 1).toString());
-
+    customAddRowAlignment(perf_still, score_still, "0");
     click_cleanup();
   } else {
     alert("mark two notes for alignment...");
@@ -432,9 +427,7 @@ function change_alignment_one_legacy() {
 else {
   alert("mark two notes for alignment.");
 }
-  
 }
-
 
 function change_alignment_one() {
   if (clicked_note && right_clicked_note){
