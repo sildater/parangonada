@@ -384,8 +384,43 @@ function erase_alignment() {
   }
   canvabuffer_draw();
   redraw();
-
 }
+
+function erase_alignment() {
+  alignment.clearRows();
+  lines = {};
+  zlines = {};
+  for(var i = 0; i < notes.length; i++){
+    notes[i].reset();
+    notes[i].rebase();
+    notes[i].right_rebase();
+  }
+  canvabuffer_draw();
+  redraw();
+}
+
+
+function erase_alignment_indel() {
+  alignment.clearRows();
+  lines = {};
+  zlines = {};
+  for(var i = 0; i < notes.length; i++){
+    notes[i].reset();
+    notes[i].rebase();
+    notes[i].right_rebase();
+  }
+  canvabuffer_draw();
+  redraw();
+
+  Object.keys(score).forEach(k => {
+    customAddRowAlignment("undefined", score[k].name, "1");
+  })
+  Object.keys(perf).forEach(k => {
+    customAddRowAlignment(perf[k].name, "undefined", "2");
+  })
+}
+
+
 
 function delete_alignment() {
   // check if something is clicked
