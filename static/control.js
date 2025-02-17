@@ -563,25 +563,17 @@ function delete_alignment() {
             score_nomore =  clicked_note_neutral.name;
             perf_nomore =  clicked_note_neutral.linked_note;
         }
-        
-          let newRow = alignment.addRow();
-          newRow.setString('ppartid',"undefined");
-          newRow.setString('partid', score_nomore);
-          newRow.setString('matchtype', '1');
-          let last_line_idx  = alignment.get(alignment.rows.length-1, "idx")
-          newRow.setString('idx', (parseInt(last_line_idx) + 1).toString());
-          // table
-
-          let row = alignment.findRow(perf_nomore, "ppartid");
-          row.setString("partid", "undefined");
-          row.setString("matchtype","2");
-
-
+          // remove row
+          customRemoveRow(perf_nomore,"ppartid",alignment);
           // reset the notes
-          perf[perf_nomore].reset();
           score[score_nomore].reset();
+          perf[perf_nomore].reset();
           // delete the line
           delete lines[score_nomore+perf_nomore] ;
+          // add deletion
+          customAddRowAlignment("undefined", score_nomore, "1");
+          // add insertion
+          customAddRowAlignment(perf_nomore, "undefined", "2");
         
 
         click_cleanup();
