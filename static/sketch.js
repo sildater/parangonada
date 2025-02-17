@@ -197,7 +197,7 @@ function setup() {
                     znoteline: color(200,0,0),
                     
                     
-                    articulation: color(120,03,204),
+                    articulation: color(120,3,204),
                     velocity: color(134,56,167),
                     timing: color(67,124,198),
 
@@ -283,11 +283,15 @@ function reset_player() {
 function setup_controls() {
   // buttons and divs on the page
   button_change = createButton('change alignment').parent("info_buttons_alignment");
-  //button.position(19, 19);
   button_change.mousePressed(change_alignment)
   button_save = createButton('save alignment').parent("info_buttons_alignment");
-  //button.position(19, 19);
   button_save.mousePressed(save_alignment);
+  checkbox_many2many = createCheckbox('enable many-to-many alignment', false).parent("info_buttons_alignment");
+  button_erase = createButton('erase alignment (no undo)').parent("info_buttons_alignment");
+  button_erase.mousePressed(erase_alignment);
+
+
+  
   button_upload = createButton('visualise uploaded files').parent("info_buttons");
   button_upload.mousePressed(redraw_with_new_files);
 

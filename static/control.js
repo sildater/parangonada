@@ -251,8 +251,7 @@ function export_annotations() {
 }
 
 function change_alignment() {
-  let x = document.getElementById("many_alignments").checked ? "True" : "False";
-  if (x === "True") {
+  if (checkbox_many2many.checked()) {
     change_alignment_many();
   }
   else {
@@ -415,31 +414,48 @@ function change_alignment_one() {
   } else if (perf_nomore == "" && score_nomore == ""){
 
     // set former unaligned perf note line to None
-    let row2 = alignment.findRow(perf_still, "ppartid");
-    row2.setString("partid", "None");
-    row2.setString("matchtype","None");
-    row2.setString("ppartid","None");
+    const rowvalues = customFindRow(perf_still, "ppartid",alignment)//alignment.findRow(perf_still, "ppartid");
+    const row2 = rowvalues[0]
+    const row2idx = rowvalues[1]
+    alignment.removeRow(row2idx);
+    
 
     // newly align former unaligned score note
     let row = alignment.findRow(score_still, "partid");
     row.setString("ppartid", perf_still);
     row.setString("matchtype","0");
 
-
   }
-  
 
-  
   click_cleanup();
-  // update match lines
-  //matchl = alignment_ids(notearray, alignment, tablepart);
-
-
 }
 else {
-  alert("mark two notes for alignment...");
+  alert("mark two notes for alignment.");
 }
   
+}
+
+function customFindRow (value, column, table) {
+  // try the Object 
+  for (let i = 0; i < table.rows.length; i++) {
+    if (table.rows[i].obj[column] === value) {
+      return [table.rows[i], i];
+    }
+  }
+}
+
+function customAddRowAlignment (ppid, pid, mt){
+  const newRow = alignment.addRow();
+  newRow.setString('ppartid',ppid);
+  newRow.setString('partid', pid);
+  newRow.setString('matchtype', mt);
+  newRow.setString('idx', (alignment.rows.length-1).toString());
+}
+
+function customRemoveRow (value, column, table){
+  const rowvalues = customFindRow(value, column, table)
+  const rowrow2idx = rowvalues[1]
+  table.removeRow(row2idx);
 }
 
 function delete_alignment() {
