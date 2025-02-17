@@ -46,7 +46,7 @@ done:
 2025
 * improved csv export for heavily edited files
 * erasing all alignments for a fresh start
-* experimental many-to-many alignment (thank you @C-Suhit !)
+* experimental many-to-many alignment (thank you [@C-Suhit](https://www.github.com/C-Suhit) !)
 
   
 OLDER
