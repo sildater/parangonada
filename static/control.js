@@ -33,7 +33,7 @@ function keyTyped() {
       else {
         checkbox_alignment.checked(true);
       }
-      canvabuffer_draw()
+      canvabuffer_draw();
       redraw();
     } 
     if (key === '2') {
@@ -291,7 +291,7 @@ function change_alignment_many() {
   }
 }
 
-function change_alignment_one() {
+function change_alignment_one_legacy() {
   if (clicked_note && right_clicked_note){
 
   
@@ -435,6 +435,60 @@ else {
   
 }
 
+
+function change_alignment_one() {
+  if (clicked_note && right_clicked_note){
+  let perf_still;
+  let score_nomore;
+  let score_still;
+  let perf_nomore;
+  if (clicked_note.type == "perf")
+  {
+      perf_still = clicked_note.name;
+      score_nomore =  clicked_note.linked_note;
+      score_still = right_clicked_note.name;
+      perf_nomore =  right_clicked_note.linked_note;
+  }
+  else{
+      perf_still = right_clicked_note.name;
+      score_nomore =  right_clicked_note.linked_note;
+      score_still = clicked_note.name;
+      perf_nomore =  clicked_note.linked_note;
+  }
+
+  // reset the notes
+  score[score_still].reset();
+  perf[perf_still].reset();
+  score[score_still].link(perf_still);
+  perf[perf_still].link(score_still);
+  lines[score_still+perf_still] = new NoteLine(score[score_still].x,score[score_still].y,
+                                              perf[perf_still].x,perf[perf_still].y, perf_still, score_still, false);
+  
+  customRemoveRow(perf_still, "ppartid",alignment);
+  customRemoveRow(score_still, "partid",alignment);
+  customAddRowAlignment(perf_still, score_still, "0");
+  if (perf_nomore != "") {
+    // reset the note
+    perf[perf_nomore].reset();
+    // delete the line
+    delete lines[score_still+perf_nomore] ;
+    // add insertion
+    customAddRowAlignment(perf_nomore, "undefined", "2");
+  } else if (score_nomore != ""){
+    // reset the note
+    score[score_nomore].reset();
+    // delete the line
+    delete lines[score_nomore+perf_still] ;
+    // add deletion
+    customAddRowAlignment("undefined", score_nomore, "1");
+  } 
+  click_cleanup();
+}
+else {
+  alert("mark two notes for alignment.");
+}
+}
+
 function customFindRow (value, column, table) {
   // try the Object 
   for (let i = 0; i < table.rows.length; i++) {
@@ -445,17 +499,39 @@ function customFindRow (value, column, table) {
 }
 
 function customAddRowAlignment (ppid, pid, mt){
+  console.log(ppid, pid, mt);
   const newRow = alignment.addRow();
   newRow.setString('ppartid',ppid);
   newRow.setString('partid', pid);
   newRow.setString('matchtype', mt);
-  newRow.setString('idx', (alignment.rows.length-1).toString());
+  let last_line_idx  = -1;
+  if (alignment.rows.length > 1) {
+    last_line_idx  = parseInt(alignment.get(alignment.rows.length-2, "idx"));
+  } 
+  console.log(last_line_idx);
+  newRow.setString('idx', (last_line_idx + 1).toString());
 }
 
 function customRemoveRow (value, column, table){
   const rowvalues = customFindRow(value, column, table)
-  const rowrow2idx = rowvalues[1]
-  table.removeRow(row2idx);
+  if (typeof rowvalues != "undefined" ){
+    const row2idx = rowvalues[1]
+    table.removeRow(row2idx);
+  }
+}
+
+function erase_alignment() {
+  alignment.clearRows();
+  lines = {};
+  zlines = {};
+  for(var i = 0; i < notes.length; i++){
+    notes[i].reset();
+    notes[i].rebase();
+    notes[i].right_rebase();
+  }
+  canvabuffer_draw();
+  redraw();
+
 }
 
 function delete_alignment() {
@@ -499,7 +575,8 @@ function delete_alignment() {
           newRow.setString('ppartid',"undefined");
           newRow.setString('partid', score_nomore);
           newRow.setString('matchtype', '1');
-          newRow.setString('idx', (alignment.rows.length-1).toString());
+          let last_line_idx  = alignment.get(alignment.rows.length-1, "idx")
+          newRow.setString('idx', (parseInt(last_line_idx) + 1).toString());
           // table
 
           let row = alignment.findRow(perf_nomore, "ppartid");
