@@ -131,16 +131,24 @@ const AlignmentManager = {
             }
         }
         
+        const pp_inserted = [];
+        const score_deleted = [];
         // Add indel rows only for notes that have no other matches
         for (const [pp, pt] of matches_to_remove) {
             const perfHasOtherMatches = this._has_other_matches(pp, "perf");
             const scoreHasOtherMatches = this._has_other_matches(pt, "score");
             
             if (!perfHasOtherMatches) {
-                this._add_insertion_indel(pp);
+                if (!pp_inserted.includes(pp)) {
+                    this._add_insertion_indel(pp);
+                    pp_inserted.push(pp);
+                }
             }
             if (!scoreHasOtherMatches) {
-                this._add_deletion_indel(pt);
+                if (!score_deleted.includes(pt)) {
+                    this._add_deletion_indel(pt);
+                    score_deleted.push(pt);
+                }
             }
         }
     },
