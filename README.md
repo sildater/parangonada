@@ -35,13 +35,18 @@ For [match files](https://cpjku.github.io/matchfile/)
 and a basic interface for saving parangonada-ready csv files is also available in parangonagar:
 - parangonar.match.save_parangonada_csv
 
-## planned updates 2025:
+## Update:
 
-* fix match deletion for many-to-many alignment
 * issues and bug hints are very welcome
 
 
 done:
+
+2026
+* refactor of manual alignment interaction, now with complete support for many-to-many alignment
+* fix accurate match/indel line creation for csv export (thank you [@C-Suhit](https://www.github.com/C-Suhit) !)
+* add zip upload
+* refactor for lightweight zooming
 
 2025
 * improved csv export for heavily edited files
